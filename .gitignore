@@ -1,0 +1,6 @@
+.idea/
+.vscode/
+install/
+build/
+options.json
+ios.toolchain.cmake
