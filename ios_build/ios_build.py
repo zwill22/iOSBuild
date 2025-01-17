@@ -38,6 +38,8 @@ def sortCMakeOptions(options: list) -> dict:
         v = keyVal[1].strip()
         if k in protected_keys:
             raise ValueError("CMake option {} cannot be specified in command line".format(k))
+        if k in newOptions:
+            raise ValueError("Option {} already specified".format(k))
         newOptions[k] = v
 
     return newOptions

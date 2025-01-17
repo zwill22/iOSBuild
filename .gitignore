@@ -4,3 +4,4 @@ install/
 build/
 options.json
 ios.toolchain.cmake
+*__pycache__*
