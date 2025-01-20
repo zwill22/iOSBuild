@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "iOSBuild"
+description = "A Python script for creating XCFrameworks for CMake projects"
+requires-python = ">= 3.8"
+dynamic = ["version"]
+readme = "README.md"
+license = { file = "LICENSE" }
+dependencies = []
+keywords = ["iOS", "MacOS", "CMake", "XCFramework", "Apple"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python"
+]
+
+[project.urls]
+Repository = "https://github.com/zwill22/iOSBuild"
+
+[tool.setuptools.packages.find]
+exclude = ["build", "install"]
+
+[project.scripts]
+run = "main:main"
