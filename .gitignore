@@ -5,3 +5,5 @@ build/
 options.json
 ios.toolchain.cmake
 *__pycache__*
+dist/
+iOSBuild.egg-info/
