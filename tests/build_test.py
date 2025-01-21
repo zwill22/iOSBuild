@@ -1,4 +1,4 @@
-from ios_build import ios_build
+from ios_build import functions
 
 import unittest
 

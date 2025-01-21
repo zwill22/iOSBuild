@@ -23,4 +23,4 @@ Repository = "https://github.com/zwill22/iOSBuild"
 exclude = ["build", "install"]
 
 [project.scripts]
-run = "main:main"
+ios_build = "ios_build.ios_build:main"
