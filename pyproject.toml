@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "iOSBuild"
 description = "A Python script for creating XCFrameworks for CMake projects"
-requires-python = ">= 3.8"
+requires-python = ">= 3.9"
 dynamic = ["version"]
 readme = "README.md"
 license = { file = "LICENSE" }
