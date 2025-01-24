@@ -9,3 +9,5 @@ dist/
 iOSBuild.egg-info/
 uv.lock
 .venv/
+.ruff_cache
+.pytest_cache
