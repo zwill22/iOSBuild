@@ -1,6 +1,7 @@
 from parser import parse
 from build import runBuild
 
+
 def main():
     try:
         kwargs = parse()
@@ -13,5 +14,5 @@ def main():
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

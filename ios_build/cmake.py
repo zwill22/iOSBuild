@@ -9,7 +9,8 @@ def checkCMake(**kwargs):
         interface.cmake("--version", **kwargs)
     except FileNotFoundError as e:
         raise RuntimeError("CMake not found: {}".format(e))
-    
+
+
 def configure(
     path: str,
     toolchain_path: str,
@@ -54,9 +55,7 @@ def configure(
     printer.tick()
 
 
-def build(
-    platform_dir: str, verbose: bool = False, config: str = "Release", **kwargs
-):
+def build(platform_dir: str, verbose: bool = False, config: str = "Release", **kwargs):
     if verbose:
         print("Commencing build...")
     interface.cmake("--build", platform_dir, "--config", config, **kwargs)
@@ -65,9 +64,7 @@ def build(
         printer.tick()
 
 
-def install(
-    platform_dir, verbose: bool = False, config: str = "Release", **kwargs
-):
+def install(platform_dir, verbose: bool = False, config: str = "Release", **kwargs):
     if verbose:
         print("Commencing install...")
     interface.cmake("--install", platform_dir, "--config", config, **kwargs)
@@ -76,7 +73,14 @@ def install(
         printer.tick()
 
 
-def runCMake(path: str, toolchain_path: str, platform: str, platform_dir: str, install_dir: str, **kwargs):
+def runCMake(
+    path: str,
+    toolchain_path: str,
+    platform: str,
+    platform_dir: str,
+    install_dir: str,
+    **kwargs,
+):
     configure(path, toolchain_path, platform, platform_dir, install_dir, **kwargs)
     build(platform_dir, **kwargs)
     install(platform_dir, **kwargs)

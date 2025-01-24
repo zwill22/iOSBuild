@@ -1,6 +1,7 @@
 import os
 import printer
 
+
 def findPlatformLibraries(platform_dir: str) -> dict[str, str]:
     libraries = {}
     for root, dirs, files in os.walk(platform_dir):
@@ -29,7 +30,9 @@ def findlibraries(
     libraries = {}
     for platform in platforms:
         platform_dir = os.path.join(install_dir, platform)
-        assert os.path.isdir(platform_dir), "Directory does not exist: {}".format(platform_dir)
+        assert os.path.isdir(platform_dir), "Directory does not exist: {}".format(
+            platform_dir
+        )
         libraries[platform] = findPlatformLibraries(platform_dir)
 
     result = invertDict(libraries)

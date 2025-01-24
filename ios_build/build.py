@@ -6,7 +6,7 @@ import cmake
 import search
 import xcodebuild
 from printer import printValue, tick, cross
-    
+
 
 def checkPath(path: str, verbose: bool = False, **kwargs):
     if not os.path.isdir(path):
@@ -27,7 +27,7 @@ def checkPath(path: str, verbose: bool = False, **kwargs):
         raise FileNotFoundError(
             "Path is not a valid CMake Project, no such file:\t{}".format(cmake_path)
         )
-    
+
 
 def setupDirectory(
     dir_prefix: str,
@@ -50,7 +50,7 @@ def setupDirectory(
         tick()
 
     return new_dir
-    
+
 
 def getToolchain(verbose: bool = False, toolchain: str = None, **kwargs) -> str:
     if not toolchain:
@@ -104,7 +104,6 @@ def runBuild(
         platform_dir = setupDirectory(platform, prefix=build_dir)
 
         cmake.runCMake(path, toolchain, platform, platform_dir, install_dir, **kwargs)
-
 
     createFrameworks(install_dir, platforms, **kwargs)
 

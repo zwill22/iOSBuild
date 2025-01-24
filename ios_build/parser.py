@@ -116,7 +116,7 @@ def parseArgs() -> argparse.Namespace:
         help="Cleans the build directory after completion",
         action="store_true",
     )
-    #TODO Add no-install option
+    # TODO Add no-install option
 
     platforms = [
         "OS",
@@ -172,7 +172,7 @@ def parseArgs() -> argparse.Namespace:
     devops.add_argument(
         "--dev-print", "-d", action="store_true", help="Print developer output"
     )
-    
+
     return parser.parse_args()
 
 
