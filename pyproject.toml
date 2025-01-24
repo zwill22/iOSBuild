@@ -24,3 +24,11 @@ exclude = ["build", "install"]
 
 [project.scripts]
 ios_build = "ios_build.ios_build:main"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q -v"
+testpaths = [
+    "tests"
+]
+pythonpath = "ios_build"
