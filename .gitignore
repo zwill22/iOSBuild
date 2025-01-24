@@ -8,3 +8,4 @@ ios.toolchain.cmake
 dist/
 iOSBuild.egg-info/
 uv.lock
+.venv/
