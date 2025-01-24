@@ -1,4 +1,5 @@
-from functions import parse, runBuild
+from parser import parse
+from build import runBuild
 
 def main():
     try:

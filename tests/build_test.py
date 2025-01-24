@@ -1,4 +1,4 @@
-from ios_build import functions
+from ios_build import parser
 
 import unittest
 
@@ -28,7 +28,7 @@ class TestParser(unittest.TestCase):
 
         for example in fail_examples:
             with self.assertRaises(ValueError):
-                functions.sortCMakeOptions(example)
+                parser.sortCMakeOptions(example)
 
         self.assertEqual(len(success_examples), len(expected_results))
         
@@ -36,6 +36,6 @@ class TestParser(unittest.TestCase):
             example_input = success_examples[i]
             expected_result = expected_results[i]
 
-            result = functions.sortCMakeOptions(example_input)
+            result = parser.sortCMakeOptions(example_input)
             self.assertDictEqual(result, expected_result)
 
