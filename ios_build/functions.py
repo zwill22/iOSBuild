@@ -139,6 +139,7 @@ def parse() -> dict:
         help="Cleans the build directory after completion",
         action="store_true",
     )
+    #TODO Add no-install option
 
     platforms = [
         "OS",
@@ -308,7 +309,7 @@ def setupDirectory(
             shutil.rmtree(new_dir)
             os.makedirs(new_dir)
     else:
-        os.mkdir(new_dir)
+        os.makedirs(new_dir)
 
     if verbose:
         printValue("Setup directory:", new_dir)
@@ -374,7 +375,7 @@ def findlibraries(
     libraries = {}
     for platform in platforms:
         platform_dir = os.path.join(install_dir, platform)
-        assert os.path.isdir(platform_dir)
+        assert os.path.isdir(platform_dir), "Directory does not exist: {}".format(platform_dir)
         libraries[platform] = findPlatformLibraries(platform_dir)
 
     result = invertDict(libraries)

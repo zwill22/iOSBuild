@@ -1,4 +1,4 @@
-from ios_build.functions import parse, runBuild
+from functions import parse, runBuild
 
 def main():
     try:
