@@ -58,7 +58,7 @@ def sortArgs(kwargs: argparse.Namespace) -> dict:
     return output
 
 
-def parseArgs(args: list[str] | None = None) -> argparse.Namespace:
+def parseArgs(args = None):
     parser = argparse.ArgumentParser(
         prog="iOSBuild",
         description="""
@@ -176,7 +176,7 @@ def parseArgs(args: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(args=args)
 
 
-def parse(args: list[str] | None = None) -> dict:
+def parse(args = None) -> dict:
     parsed_args = parseArgs(args)
 
     return sortArgs(parsed_args)
