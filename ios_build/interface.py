@@ -4,7 +4,7 @@ import subprocess
 def callSubProcess(command: list):
     process = subprocess.Popen(command)
 
-    output, error = process.communicate()
+    process.communicate()
     if process.returncode != 0:
         raise RuntimeError(
             "Error occurred during subprocess {0}: {1} return non-zero exit status {2}".format(
