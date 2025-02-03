@@ -1,5 +1,5 @@
 def printValue(text, value, end="\t"):
-    print("{0:<32} {1:<80}".format(text, value), end=end)
+    print("{0:<32} {1}".format(text, value), end=end)
 
 
 def tick():
