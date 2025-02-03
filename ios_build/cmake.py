@@ -1,7 +1,7 @@
 import os
 
-from . import printer
-from . import interface
+from ios_build import printer
+from ios_build import interface
 
 
 def checkCMake(**kwargs):

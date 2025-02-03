@@ -1,5 +1,5 @@
-from .parser import parse
-from .build import runBuild
+from ios_build.parser import parse
+from ios_build.build import runBuild
 
 
 def main():

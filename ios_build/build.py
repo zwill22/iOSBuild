@@ -2,10 +2,10 @@ import os
 import shutil
 from urllib.request import urlretrieve
 
-from . import cmake
-from . import search
-from . import xcodebuild
-from .printer import printValue, tick, cross
+from ios_build import cmake
+from ios_build import search
+from ios_build import xcodebuild
+from ios_build.printer import printValue, tick, cross
 
 
 def checkPath(path: str, verbose: bool = False, **kwargs):
@@ -105,6 +105,7 @@ def runBuild(
 
         cmake.runCMake(path, toolchain, platform, platform_dir, install_dir, **kwargs)
 
+    # TODO Add check for existing frameworks (they cause an error)
     createFrameworks(install_dir, platforms, **kwargs)
 
     cleanUp(build_dir, install_dir, **kwargs)

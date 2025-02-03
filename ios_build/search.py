@@ -1,6 +1,6 @@
 import os
 
-from . import printer
+from ios_build import printer
 
 
 def findPlatformLibraries(platform_dir: str) -> dict[str, str]:
