@@ -6,7 +6,11 @@ def callSubProcess(command: list):
 
     output, error = process.communicate()
     if process.returncode != 0:
-        raise RuntimeError("CMake error occurred: {0}, {1}".format(output, error))
+        raise RuntimeError(
+            "Error occurred during subprocess {0}: {1} return non-zero exit status {2}".format(
+                command[0], " ".join(command), process.returncode
+            )
+        )
 
 
 def cmake(*args, cmake_command: str = "cmake", **kwargs):
