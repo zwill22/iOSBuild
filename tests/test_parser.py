@@ -1,4 +1,5 @@
 import pytest
+import json
 
 from ios_build.parser import parse
 
@@ -67,3 +68,21 @@ def testCMakeOptions():
     result = parse(["example", *command])
     cmake_options = result["cmake_options"]
     assert cmake_options == expected_result
+
+
+def testJSON():
+    filepath = "tests/example.json"
+    example_dict = {"k": "v"}
+
+    platform_json = ["--platform-json", filepath]
+    platform_options = ["--platform-options", json.dumps(example_dict)]
+
+    with pytest.raises(SystemExit):
+        parse(["example", *platform_json, *platform_options])
+
+    result1 = parse(["example", *platform_json])
+
+    assert result1["platform_options"] == {"key1": "value1", "key2": "value2"}
+
+    result2 = parse(["example", *platform_options])
+    assert result2["platform_options"] == example_dict
