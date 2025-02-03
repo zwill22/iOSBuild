@@ -146,7 +146,7 @@ def parseArgs(args = None):
             default_platforms
         ),
         default=default_platforms,
-        nargs="*",
+        nargs="+",
         choices=platforms,
     )
     parser.add_argument(
