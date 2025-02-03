@@ -52,10 +52,13 @@ def setupDirectory(
     return new_dir
 
 
-def getToolchain(verbose: bool = False, toolchain: str = None, **kwargs) -> str:
+def getToolchain(
+    verbose: bool = False, toolchain: str = None, download_dir=".", **kwargs
+) -> str:
     if not toolchain:
         raise ValueError("Toolchain file not found")
-    filename = "ios.toolchain.cmake"
+
+    filename = os.path.join(download_dir, "ios.toolchain.cmake")
 
     if verbose:
         printValue("Downloading toolchain file:", toolchain)
@@ -80,7 +83,7 @@ def cleanUp(build_dir: str, install_dir: str, clean_up: bool = False, **kwargs):
     print("Cleaning Up", end="\t")
     if clean_up:
         shutil.rmtree(build_dir)
-        shutil.rmtree(install_dir)
+        shutil.rmtree(install_dir)  # TODO Remove install_dir?
     tick()
 
 

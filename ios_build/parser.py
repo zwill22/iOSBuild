@@ -58,7 +58,7 @@ def sortArgs(kwargs: argparse.Namespace) -> dict:
     return output
 
 
-def parseArgs(args = None):
+def parseArgs(args=None):
     parser = argparse.ArgumentParser(
         prog="iOSBuild",
         description="""
@@ -92,6 +92,8 @@ def parseArgs(args = None):
         help="URL for toolchain file for cmake",
         default="https://github.com/leetal/ios-cmake/blob/master/ios.toolchain.cmake?raw=true",
     )
+
+    # TODO: Working directory no longer used, toolchain downloaded to current dir only, link with prefix?
     parser.add_argument(
         "--working-dir",
         "-w",
@@ -176,7 +178,7 @@ def parseArgs(args = None):
     return parser.parse_args(args=args)
 
 
-def parse(args = None) -> dict:
+def parse(args=None) -> dict:
     parsed_args = parseArgs(args)
 
     return sortArgs(parsed_args)
