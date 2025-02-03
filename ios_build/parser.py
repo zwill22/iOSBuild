@@ -24,7 +24,7 @@ def sortCMakeOptions(options: list) -> dict:
     return newOptions
 
 
-def load_json(filename: str) -> dict:
+def loadJson(filename: str) -> dict:
     with open(filename) as f:
         result = json.load(f)
 
@@ -43,7 +43,7 @@ def sortArgs(kwargs: argparse.Namespace) -> dict:
         elif k == "platform_json":
             if v:
                 assert arg_dict["platform_options"] is None
-                output["platform_options"] = load_json(v)
+                output["platform_options"] = loadJson(v)
         elif k == "platform_options":
             if v:
                 assert arg_dict["platform_json"] is None
