@@ -1,5 +1,6 @@
 import os
-import interface
+
+from . import interface
 
 
 def checkXCodeBuild(**kwargs):

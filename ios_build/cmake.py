@@ -1,7 +1,7 @@
 import os
 
-import printer
-import interface
+from . import printer
+from . import interface
 
 
 def checkCMake(**kwargs):

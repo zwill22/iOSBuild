@@ -1,5 +1,5 @@
-from parser import parse
-from build import runBuild
+from .parser import parse
+from .build import runBuild
 
 
 def main():

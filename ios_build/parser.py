@@ -1,7 +1,7 @@
 import json
 import argparse
 
-from printer import printEmbeddedDict
+from .printer import printEmbeddedDict
 
 
 def sortCMakeOptions(options: list) -> dict:
@@ -58,7 +58,7 @@ def sortArgs(kwargs: argparse.Namespace) -> dict:
     return output
 
 
-def parseArgs() -> argparse.Namespace:
+def parseArgs(args) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="iOSBuild",
         description="""
@@ -173,10 +173,10 @@ def parseArgs() -> argparse.Namespace:
         "--dev-print", "-d", action="store_true", help="Print developer output"
     )
 
-    return parser.parse_args()
+    return parser.parse_args(args)
 
 
-def parse() -> dict:
-    args = parseArgs()
+def parse(*args) -> dict:
+    parsed_args = parseArgs(args)
 
-    return sortArgs(args)
+    return sortArgs(parsed_args)

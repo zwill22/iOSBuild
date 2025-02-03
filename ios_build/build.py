@@ -2,10 +2,10 @@ import os
 import shutil
 from urllib.request import urlretrieve
 
-import cmake
-import search
-import xcodebuild
-from printer import printValue, tick, cross
+from . import cmake
+from . import search
+from . import xcodebuild
+from .printer import printValue, tick, cross
 
 
 def checkPath(path: str, verbose: bool = False, **kwargs):
