@@ -1,6 +1,7 @@
 from ios_build.parser import parse
 from ios_build.build import runBuild
 
+
 # TODO Add custom exceptions
 def main(args=None):
     try:

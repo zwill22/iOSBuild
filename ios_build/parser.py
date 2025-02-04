@@ -5,6 +5,20 @@ from ios_build.printer import printEmbeddedDict
 
 
 def sortCMakeOptions(options: list) -> dict:
+    """
+    Sort CMake Cache variables into a dictionary.
+
+    Args:
+        options (list): List of all CMake cache variables as a list of the form `['key=value', ...]`
+
+    Raises:
+        ValueError: Raised if CMake option is not formatted as `k = v`
+        ValueError: Raised if a protected CMake option is used, i.e one already specified by this program.
+        ValueError: Raised if an option is repeated.
+
+    Returns:
+        dict: _description_
+    """
     protected_keys = ["CMAKE_TOOLCHAIN_FILE", "PLATFORM", "CMAKE_INSTALL_PREFIX"]
     newOptions = {}
     for val in options:
@@ -25,6 +39,15 @@ def sortCMakeOptions(options: list) -> dict:
 
 
 def loadJson(filename: str) -> dict:
+    """
+    Load file in JSON format as a dictionary.
+
+    Args:
+        filename (str): Path to file
+
+    Returns:
+        dict: File contents as a dictionary
+    """
     with open(filename) as f:
         result = json.load(f)
 
@@ -32,6 +55,19 @@ def loadJson(filename: str) -> dict:
 
 
 def sortArgs(kwargs: argparse.Namespace) -> dict:
+    """
+    Sorts the `arparse` output into a dictionary for use with the
+    rest of the program.
+
+    Args:
+        kwargs (argparse.Namespace): The input arguments returned from `argparse`
+
+    Raises:
+        RuntimeError: Raised if input is incorrect.
+
+    Returns:
+        dict: All options for the program in dictionary format.
+    """
     arg_dict = vars(kwargs)
     output = {}
     for k, v in arg_dict.items():
@@ -62,6 +98,14 @@ def sortArgs(kwargs: argparse.Namespace) -> dict:
 
 
 def parseArgs(args=None):
+    """
+    Main parser, parses the command-line arguments using `argparse`.
+    The full list of arguments is found using the help option `-h`.
+    Note that any errors in argparse return a `SystemExit` signal which must be caught.
+
+    Args:
+        args (optional): Optional additional arguments (for testing purposes).
+    """
     parser = argparse.ArgumentParser(
         prog="iOSBuild",
         description="""
@@ -182,6 +226,18 @@ def parseArgs(args=None):
 
 
 def parse(args=None) -> dict:
+    """
+    Parse command-line arguments.
+
+    Args:
+        args (_type_, optional): Pass arguments directly to function (for testing). Defaults to None.
+
+    Raises:
+        RuntimeError: Raised if argparse throws an exit signal
+
+    Returns:
+        dict: Arguments sorted into a Python dictionary
+    """
     try:
         parsed_args = parseArgs(args)
     except SystemExit as e:

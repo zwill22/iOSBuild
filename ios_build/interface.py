@@ -2,6 +2,15 @@ import subprocess
 
 
 def callSubProcess(command: list):
+    """
+    Call a subprocess specified using a list of commands.
+
+    Args:
+        command (list): List of commands to run formatted for `subprocess`.
+
+    Raises:
+        RuntimeError: Raised if the process returns a non-zero exit code.
+    """
     process = subprocess.Popen(command)
 
     process.communicate()
@@ -14,12 +23,24 @@ def callSubProcess(command: list):
 
 
 def cmake(*args, cmake_command: str = "cmake", **kwargs):
+    """
+    Runs `cmake` using subprocess.
+
+    Args:
+        cmake_command (str, optional): Custom CMake command. Defaults to "cmake".
+    """
     command = [cmake_command, *args]
     print(" ".join(command))
     callSubProcess(command)
 
 
 def xcodebuild(*args, xcode_build_command: str = "xcodebuild", **kwargs):
+    """
+    Runs `xcodebuild` using subprocess.
+
+    Args:
+        xcode_build_command (str, optional): Custom xcodebuild command. Defaults to "xcodebuild".
+    """
     command = [xcode_build_command, *args]
     print(" ".join(command))
     callSubProcess(command)
