@@ -26,7 +26,7 @@ def invertDict(libraries) -> dict[str, dict[str, str]]:
 
 
 def findlibraries(
-    install_dir: str, platforms: list[str], verbose: bool = False, **kwargs
+    install_dir: str, platforms: list[str] = [], verbose: bool = False, **kwargs
 ) -> dict[str, dict[str, str]]:
     libraries = {}
     for platform in platforms:

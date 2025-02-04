@@ -86,20 +86,26 @@ def testCleanUp(tmp_path):
     assert os.path.isdir(tmp_path)
 
 
+def testBuildFn(tmp_path):
+    with pytest.raises(RuntimeError):
+        build.build(tmp_path)
+
+
 @pytest.mark.parametrize("verbose", [True, False])
 def testBuild(tmp_path, verbose):
     with pytest.raises(TypeError):
         build.runBuild()
 
     kwargs = parse(["example", "-w", os.path.abspath(tmp_path)])
-
-    kwargs["prefix"] = tmp_path
     kwargs["verbose"] = verbose
-
-    build.runBuild(**kwargs)
 
     build_path = os.path.join(tmp_path, kwargs["build_prefix"])
     install_path = os.path.join(tmp_path, kwargs["install_prefix"])
+
+    kwargs["build_prefix"] = build_path
+    kwargs["install_prefix"] = install_path
+
+    build.runBuild(**kwargs)
 
     assert os.path.isdir(build_path)
     assert os.path.isdir(install_path)
@@ -109,17 +115,19 @@ def testBuild(tmp_path, verbose):
 def testBuildWithOptions(tmp_path, verbose):
     kwargs = parse(["example"])
 
-    kwargs["prefix"] = tmp_path
     kwargs["verbose"] = verbose
 
     kwargs["cmake_options"] = {"FOO": "ON", "BAR": "OFF"}
 
     kwargs["platform_options"] = {"MAC_ARM64": {"NEW": "OFF"}}
 
-    build.runBuild(**kwargs)
-
     build_path = os.path.join(tmp_path, kwargs["build_prefix"])
     install_path = os.path.join(tmp_path, kwargs["install_prefix"])
+
+    kwargs["build_prefix"] = build_path
+    kwargs["install_prefix"] = install_path
+
+    build.runBuild(**kwargs)
 
     assert os.path.isdir(build_path)
     assert os.path.isdir(install_path)

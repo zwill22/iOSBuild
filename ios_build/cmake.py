@@ -12,11 +12,11 @@ def checkCMake(**kwargs):
 
 
 def configure(
-    path: str,
-    toolchain_path: str,
-    platform: str,
-    platform_dir: str,
-    install_dir: str,
+    path: str = None,
+    platform: str = None,
+    toolchain_path: str = None,
+    install_dir: str = None,
+    platform_dir: str = None,
     verbose: bool = False,
     platform_options: dict = {},
     cmake_options: dict = {},
@@ -55,7 +55,7 @@ def configure(
     printer.tick()
 
 
-def build(platform_dir: str, verbose: bool = False, config: str = "Release", **kwargs):
+def build(platform_dir: str = None, verbose: bool = False, config: str = "Release", **kwargs):
     if verbose:
         print("Commencing build...")
     interface.cmake("--build", platform_dir, "--config", config, **kwargs)
@@ -64,7 +64,7 @@ def build(platform_dir: str, verbose: bool = False, config: str = "Release", **k
         printer.tick()
 
 
-def install(platform_dir, verbose: bool = False, config: str = "Release", **kwargs):
+def install(platform_dir: str = None, verbose: bool = False, config: str = "Release", **kwargs):
     if verbose:
         print("Commencing install...")
     interface.cmake("--install", platform_dir, "--config", config, **kwargs)
@@ -73,14 +73,7 @@ def install(platform_dir, verbose: bool = False, config: str = "Release", **kwar
         printer.tick()
 
 
-def runCMake(
-    path: str,
-    toolchain_path: str,
-    platform: str,
-    platform_dir: str,
-    install_dir: str,
-    **kwargs,
-):
-    configure(path, toolchain_path, platform, platform_dir, install_dir, **kwargs)
-    build(platform_dir, **kwargs)
-    install(platform_dir, **kwargs)
+def runCMake(**kwargs):
+    configure(**kwargs)
+    build(**kwargs)
+    install(**kwargs)
