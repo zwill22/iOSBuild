@@ -91,6 +91,36 @@ def testBuildFn(tmp_path):
         build.build(tmp_path)
 
 
+def checkBuild(build_path, install_path, **kwargs):
+    assert os.path.isdir(build_path)
+    assert os.path.isdir(install_path)
+
+    platforms = kwargs.get("platforms")
+    for platform in platforms:
+        header = os.path.join(install_path, platform, "library.h")
+        lib = os.path.join(install_path, platform, "libExampleLibrary.a")
+
+        assert os.path.isfile(header)
+        assert os.path.isfile(lib)
+
+    framework = os.path.join(install_path, "libExampleLibrary.xcframework")
+    assert os.path.isdir(framework)
+
+    # Test structure of xcframework
+    p = 0
+    for f in os.listdir(framework):
+        path = os.path.join(framework, f)
+        if os.path.isdir(path):
+            lib = os.path.join(path, "libExampleLibrary.a")
+            assert os.path.isfile(lib)
+            p += 1
+        else:
+            assert f == "Info.plist"
+
+    assert p == len(platforms)
+
+
+@pytest.mark.slow
 @pytest.mark.parametrize("verbose", [True, False])
 def testBuild(tmp_path, verbose):
     with pytest.raises(TypeError):
@@ -107,10 +137,10 @@ def testBuild(tmp_path, verbose):
 
     build.runBuild(**kwargs)
 
-    assert os.path.isdir(build_path)
-    assert os.path.isdir(install_path)
+    checkBuild(build_path, install_path, **kwargs)
 
-
+# TODO Add quick tests for code only covered by slow tests
+@pytest.mark.slow
 @pytest.mark.parametrize("verbose", [True, False])
 def testBuildWithOptions(tmp_path, verbose):
     kwargs = parse(["example"])
@@ -129,5 +159,4 @@ def testBuildWithOptions(tmp_path, verbose):
 
     build.runBuild(**kwargs)
 
-    assert os.path.isdir(build_path)
-    assert os.path.isdir(install_path)
+    checkBuild(build_path, install_path, **kwargs)

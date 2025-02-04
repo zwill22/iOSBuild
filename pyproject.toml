@@ -32,6 +32,9 @@ testpaths = [
     "tests"
 ]
 pythonpath = "ios_build"
+markers = [
+    "slow"
+]
 
 [tool.ruff]
 line-length = 88
