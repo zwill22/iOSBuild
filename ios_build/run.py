@@ -4,6 +4,15 @@ from ios_build.build import runBuild
 
 # TODO Add custom exceptions
 def main(args=None):
+    """
+    Main iOSBuild function.
+
+    Args:
+        args (_type_, optional): Optional arguments for testing. Defaults to None.
+
+    Returns:
+        int: exit code
+    """
     try:
         kwargs = parse(args=args)
         runBuild(**kwargs)
