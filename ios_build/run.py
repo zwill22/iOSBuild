@@ -2,9 +2,9 @@ from ios_build.parser import parse
 from ios_build.build import runBuild
 
 
-def main():
+def main(args=None):
     try:
-        kwargs = parse()
+        kwargs = parse(args=args)
         runBuild(**kwargs)
     except RuntimeError as error:
         print("! iOS Build Error occurred")
