@@ -80,7 +80,7 @@ class TestParseTools(unittest.TestCase):
 
         namespace.cmake_options = None
         namespace.platform_json = "tests/example.json"
-        namespace.platform_options = "\{\}"
+        namespace.platform_options = "{}"
 
         namespace.dev_print = False
 
