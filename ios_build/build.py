@@ -105,7 +105,7 @@ def getToolchain(
         str: Path to toolchain file.
     """
     if not toolchain:
-        raise ValueError("Toolchain file not found")
+        raise RuntimeError("Toolchain file not found")
 
     filename = os.path.join(download_dir, "ios.toolchain.cmake")
 
@@ -189,7 +189,12 @@ def runBuild(
     """
     cmake.checkCMake(**kwargs)
     xcodebuild.checkXCodeBuild(**kwargs)
-    checkPath(**kwargs)
+    try:
+        checkPath(**kwargs)
+    except NotADirectoryError as e:
+        raise RuntimeError(e)
+    except FileNotFoundError as e:
+        raise RuntimeError(e)
 
     build_dir = setupDirectory(build_prefix, **kwargs)
     install_dir = setupDirectory(install_prefix, **kwargs)

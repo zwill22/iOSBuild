@@ -4,7 +4,7 @@ import json
 from ios_build.parser import parse
 
 def testDefaults():
-    with pytest.raises(SystemExit):
+    with pytest.raises(RuntimeError):
         parse()
 
     result = parse(["example"])
@@ -36,7 +36,7 @@ def testVerbose():
     assert result["verbose"] is True
 
 def testPlatforms():
-    with pytest.raises(SystemExit):
+    with pytest.raises(RuntimeError):
         parse(["example", "--platforms"])
 
     result1 = parse(["example", "--platforms", "OS"])
@@ -47,12 +47,12 @@ def testPlatforms():
 
     assert result2["platforms"] == ["OS", "WATCHOS"]
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(RuntimeError):
         parse(["example", "--platforms", "WINDOWS"])
 
 
 def testCMakeOptions():
-    with pytest.raises(SystemExit):
+    with pytest.raises(RuntimeError):
         parse(["example", "-D"])
 
     keys = ["ARG1", "AnotherArg", "third_arg"]
@@ -61,7 +61,7 @@ def testCMakeOptions():
     arguments = [k + "=" + v for k, v in zip(keys, values)]
     expected_result = dict(zip(keys, values))
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(RuntimeError):
         parse(["example", "-D", *arguments])
 
     command = [item for pair in zip(["-D"] * len(arguments), arguments) for item in pair]
@@ -77,7 +77,7 @@ def testJSON():
     platform_json = ["--platform-json", filepath]
     platform_options = ["--platform-options", json.dumps(example_dict)]
 
-    with pytest.raises(SystemExit):
+    with pytest.raises(RuntimeError):
         parse(["example", *platform_json, *platform_options])
 
     result1 = parse(["example", *platform_json])

@@ -37,7 +37,10 @@ def sortArgs(kwargs: argparse.Namespace) -> dict:
     for k, v in arg_dict.items():
         if k == "cmake_options":
             if v:
-                output["cmake_options"] = sortCMakeOptions(v)
+                try:
+                    output["cmake_options"] = sortCMakeOptions(v)
+                except ValueError as e:
+                    raise RuntimeError("Invalid command line options: {}".format(e))
             else:
                 output["cmake_options"] = {}
         elif k == "platform_json":
@@ -179,6 +182,9 @@ def parseArgs(args=None):
 
 
 def parse(args=None) -> dict:
-    parsed_args = parseArgs(args)
+    try:
+        parsed_args = parseArgs(args)
+    except SystemExit as e:
+        raise RuntimeError(e)
 
     return sortArgs(parsed_args)

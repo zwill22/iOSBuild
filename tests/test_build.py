@@ -43,7 +43,7 @@ def testSetupDirectory(tmp_path, verbose, clean):
 
 @pytest.mark.parametrize("verbose", [True, False])
 def testGetToolchain(tmp_path, verbose):
-    with pytest.raises(ValueError):
+    with pytest.raises(RuntimeError):
         build.getToolchain(verbose=verbose, download_dir=tmp_path)
 
     toolchain_path = (
