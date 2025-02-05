@@ -16,3 +16,4 @@ html/
 _build/
 _static/
 _templates/
+coverage.xml
