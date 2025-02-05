@@ -75,3 +75,4 @@ jobs:
         fail_below_min: true
         format: markdown
         thresholds: '50 80'
+        output: both
