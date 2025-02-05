@@ -1,6 +1,6 @@
 # iOSBuild
 
-[![CI Build](https://github.com/zwill22/iOSBuild/actions/workflows/iOSBuild.yml/badge.svg)](https://github.com/zwill22/iOSBuild/actions/workflows/iOSBuild.yml)
+[![CI Build](https://github.com/zwill22/iOSBuild/actions/workflows/python-package.yml/badge.svg)](https://github.com/zwill22/iOSBuild/actions/workflows/python-package.yml)
 [![Documentation Status](https://readthedocs.org/projects/iosbuild/badge/?version=latest)](https://libuw12.readthedocs.io/en/latest/?badge=latest)
 [![Coverage](https://github.com/zwill22/iOSBuild/actions/workflows/coverage.yml/badge.svg)](https://github.com/zwill22/iOSBuild/actions/workflows/coverage.yml)
 
