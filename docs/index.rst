@@ -1,17 +1,27 @@
-.. iOSBuild documentation master file, created by
-   sphinx-quickstart on Wed Feb  5 09:44:10 2025.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-iOSBuild documentation
+iOSBuild Documentation
 ======================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
+This page contains the documentation for the `iOSBuild`_ project.
 
+.. _iOSBuild: https://github.com/zwill22/iOSBuild
 
-.. toctree::
+.. include:: ../README.md
+   :parser: myst_parser.sphinx_
+
+.. toctree:: 
    :maxdepth: 2
    :caption: Contents:
+   
+   about
+   modules
+   license
 
+.. seealso::
+
+   :doc: `contents`
+
+Indices and tables
+==================
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
