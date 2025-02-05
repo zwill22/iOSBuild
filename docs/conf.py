@@ -2,9 +2,6 @@ project = 'iOSBuild'
 copyright = '2025, Z M Williams'
 author = 'Z M Williams'
 
-release = '0.1'
-version = '0.1.0'
-
 extensions = [
     'sphinx.ext.duration',
     'sphinx.ext.doctest',
@@ -18,7 +15,5 @@ intersphinx_mapping = {
     'sphinx': ('https://www.sphinx-doc.org/en/master/', None),
 }
 intersphinx_disabled_domains = ['std']
-
-templates_path = ['_templates']
 
 html_theme = 'sphinx_rtd_theme'
