@@ -1,6 +1,8 @@
 from ios_build.parser import parse
 from ios_build.build import runBuild
 
+from sys import platform
+
 
 # TODO Add custom exceptions
 def main(args=None):
@@ -13,6 +15,10 @@ def main(args=None):
     Returns:
         int: exit code
     """
+    if platform != "darwin":
+        print("! Invalid OS, iOSBuild only runs on macOS")
+        return 2
+    
     try:
         kwargs = parse(args=args)
         runBuild(**kwargs)
