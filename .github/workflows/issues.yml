@@ -2,7 +2,7 @@ name: "Generate issues from TODOs"
 on:
   push:
     branches:
-      - step2 # for testing
+      - main
 
 jobs:
   build:
@@ -19,6 +19,7 @@ jobs:
         uses: alstr/todo-to-issue-action@v5
         with:
           INSERT_ISSUE_URLS: "true"
+          CLOSE_ISSUES: "true"
           
       - name: Set Git user
         run: |
