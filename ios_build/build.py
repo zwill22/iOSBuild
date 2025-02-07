@@ -137,6 +137,7 @@ def createFrameworks(install_dir: str, **kwargs):
         xcodebuild.createXCFramework(install_dir, lib, files, **kwargs)
 
 
+# TODO Install xcframework to new dir so install may be safely deleted
 def cleanUp(build_dir: str, install_dir: str, clean_up: bool = False, **kwargs):
     """
     Function to clean up files after the program is run.
