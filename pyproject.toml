@@ -1,26 +1,38 @@
 [build-system]
-requires = ["setuptools>=61.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "iOSBuild"
 description = "A Python script for creating XCFrameworks for CMake projects"
 requires-python = ">= 3.9"
-dynamic = ["version"]
+authors = [ { name = "Z M Williams", email = "z.m.will@icloud.com" }]
+version = "0.1.0"
 readme = "README.md"
 license = { file = "LICENSE" }
-dependencies = []
+dependencies = [
+    "cmake>=3.22"
+]
+metadata_version = "2.4"
 keywords = ["iOS", "MacOS", "CMake", "XCFramework", "Apple"]
 classifiers = [
     "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python"
+    "Programming Language :: Python",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13"
 ]
 
 [project.urls]
 Repository = "https://github.com/zwill22/iOSBuild"
+Documentation = "https://iosbuild.readthedocs.io/en/latest/"
 
-[tool.setuptools.packages.find]
-exclude = ["build", "install"]
+[tool.hatch.build.targets.wheel]
+packages = ["ios_build"]
 
 [project.scripts]
 ios_build = "ios_build.run:main"
