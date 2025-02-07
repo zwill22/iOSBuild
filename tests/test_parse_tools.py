@@ -1,150 +1,168 @@
 from ios_build import parser
 
 import json
-import unittest
+import pytest
 import argparse
 
+from ios_build.errors import IOSBuildError
 
-class TestParseTools(unittest.TestCase):
-    def testSortCMakeOptions(self):
-        fail_examples = [
-            ["NAME-ME"],
-            ["NAME=ME=YOU"],
-            ["CMAKE_TOOLCHAIN_FILE=file"],
-            ["PLATFORM=this"],
-            ["CMAKE_INSTALL_PREFIX=dir"],
-            ["OPTION1=value1", "OPTION1=value2"],
-        ]
-        success_examples = [
-            [],
-            ["VALUE1=value1"],
-            ["VALUE1=value1", "VALUE2=123456"],
-            ["VALUE1=value1", "VALUE2=123456", "VALUE3=true", "VALUE4=false"],
-        ]
+fail_cases = [
+    (
+        ["="],
+        "Invalid CMake option: `=`, specify CMake Cache options with `-D OPTION=VALUE`",
+    ),
+    (["NAME="], "Invalid CMake option: NAME=, should be specified as `-D NAME=VALUE`"),
+    ([""], "Invalid CMake option: , should be specified as `-D OPTION=VALUE`"),
+    (["=ME"], "Invalid CMake option: =ME, should be specified as `-D OPTION=ME`"),
+    (
+        ["NAME-ME"],
+        "Invalid CMake option: NAME-ME, should be specified as `-D OPTION=VALUE`",
+    ),
+    (
+        ["NAME=ME=YOU"],
+        "Invalid CMake option: NAME=ME=YOU, should be specified as `-D NAME=ME`",
+    ),
+    (
+        ["CMAKE_TOOLCHAIN_FILE=file"],
+        "CMake option CMAKE_TOOLCHAIN_FILE is used by iOSBuild and cannot be specified",
+    ),
+    (
+        ["PLATFORM=this"],
+        "CMake option PLATFORM is used by iOSBuild and cannot be specified",
+    ),
+    (
+        ["CMAKE_INSTALL_PREFIX=dir"],
+        "CMake option CMAKE_INSTALL_PREFIX is used by iOSBuild and cannot be specified",
+    ),
+    (["OPTION1=value1", "OPTION1=value2"], "Option OPTION1 already specified"),
+]
 
-        expected_results = [
-            {},
-            {"VALUE1": "value1"},
-            {"VALUE1": "value1", "VALUE2": "123456"},
-            {
-                "VALUE1": "value1",
-                "VALUE2": "123456",
-                "VALUE3": "true",
-                "VALUE4": "false",
-            },
-        ]
 
-        for example in fail_examples:
-            with self.assertRaises(ValueError):
-                parser.sortCMakeOptions(example)
+@pytest.mark.parametrize("value, expected_message", fail_cases)
+def testSortCMakeOptionsFailures(value, expected_message):
+    with pytest.raises(IOSBuildError, match=expected_message):
+        parser.sortCMakeOptions(value)
 
-        self.assertEqual(len(success_examples), len(expected_results))
 
-        for i in range(len(success_examples)):
-            example_input = success_examples[i]
-            expected_result = expected_results[i]
+success_cases = [
+    ([], {}),
+    (["VALUE1=value1"], {"VALUE1": "value1"}),
+    (["VALUE1=value1", "VALUE2=123456"], {"VALUE1": "value1", "VALUE2": "123456"}),
+    (
+        ["VALUE1=value1", "VALUE2=123456", "VALUE3=true", "VALUE4=false"],
+        {"VALUE1": "value1", "VALUE2": "123456", "VALUE3": "true", "VALUE4": "false"},
+    ),
+]
 
-            result = parser.sortCMakeOptions(example_input)
-            self.assertDictEqual(result, expected_result)
 
-    def testLoadJson(self):
-        loaded_json = parser.loadJson("tests/example.json")
-        self.assertDictEqual(loaded_json, {"key1": "value1", "key2": "value2"})
+@pytest.mark.parametrize("example_input, expected_result", success_cases)
+def testSortCMakeOptions(example_input, expected_result):
+    result = parser.sortCMakeOptions(example_input)
 
-    def testSortArgsEmpty(self):
-        namespace = argparse.Namespace()
+    assert result == expected_result
 
-        with self.assertRaises(AttributeError):
-            parser.sortArgs(namespace)
 
-        namespace.cmake_options = None
-        namespace.platform_json = None
-        namespace.platform_options = None
+def testLoadJson():
+    loaded_json = parser.loadJson("tests/example.json")
+    assert loaded_json == {"key1": "value1", "key2": "value2"}
 
-        expected_result = {
-            "cmake_options": {}
-        }
 
-        with self.assertRaises(AttributeError):
-            parser.sortArgs(namespace)
+def testSortArgsEmpty():
+    namespace = argparse.Namespace()
 
-        namespace.dev_print = False
-        expected_result["dev_print"] = False
+    with pytest.raises(AttributeError):
+        parser.sortArgs(namespace)
 
-        result = parser.sortArgs(namespace)
+    namespace.cmake_options = None
+    namespace.platform_json = None
+    namespace.platform_options = None
 
-        self.assertDictEqual(result, expected_result)
+    expected_result = {"cmake_options": {}}
 
-    def testSortArgsConflict(self):
-        namespace = argparse.Namespace()
+    with pytest.raises(AttributeError):
+        parser.sortArgs(namespace)
 
-        namespace.cmake_options = None
-        namespace.platform_json = "tests/example.json"
-        namespace.platform_options = "{}"
+    namespace.dev_print = False
+    expected_result["dev_print"] = False
 
-        namespace.dev_print = False
+    result = parser.sortArgs(namespace)
 
-        with self.assertRaises(AssertionError):
-            parser.sortArgs(namespace)
+    assert result == expected_result
 
-    def testSortArgsPlatformJson(self):
-        namespace = argparse.Namespace()
 
-        namespace.cmake_options = None
-        namespace.platform_json = "tests/example.json"
-        namespace.platform_options = None
+def testSortArgsConflict():
+    namespace = argparse.Namespace()
 
-        namespace.dev_print = False
+    namespace.cmake_options = None
+    namespace.platform_json = "tests/example.json"
 
-        expected_result = {
-            "dev_print": False,
-            "cmake_options": {},
-            "platform_options": {"key1": "value1", "key2": "value2"}
-        }
+    namespace.platform_options = "{}"
+    namespace.dev_print = False
 
-        result = parser.sortArgs(namespace)
-        
-        self.assertDictEqual(result, expected_result)
+    with pytest.raises(AssertionError):
+        parser.sortArgs(namespace)
 
-        namespace.dev_print = True
-        expected_result["dev_print"] = True
-        self.assertDictEqual(parser.sortArgs(namespace), expected_result)
 
-    def testSortArgsPlatformOptions(self):
-        namespace = argparse.Namespace()
+def testSortArgsPlatformJson():
+    namespace = argparse.Namespace()
 
-        namespace.cmake_options = None
-        namespace.platform_json = None
-        options = {"key": "value"}
-        namespace.platform_options = json.dumps(options)
-        namespace.dev_print = False
+    namespace.cmake_options = None
+    namespace.platform_json = "tests/example.json"
+    namespace.platform_options = None
 
-        expected_result = {
-            "dev_print": False,
-            "cmake_options": {},
-            "platform_options": options
-        }
+    namespace.dev_print = False
 
-        result = parser.sortArgs(namespace)
+    expected_result = {
+        "dev_print": False,
+        "cmake_options": {},
+        "platform_options": {"key1": "value1", "key2": "value2"},
+    }
 
-        self.assertDictEqual(result, expected_result)
+    result = parser.sortArgs(namespace)
 
-    def testSortArgsCMakeOptions(self):
-        namespace = argparse.Namespace()
+    assert result == expected_result
 
-        namespace.cmake_options = ["CHEESE=MELTED", "OPTION=FLAG"]
-        namespace.platform_json = None
-        namespace.platform_options = None
+    namespace.dev_print = True
+    expected_result["dev_print"] = True
 
-        namespace.dev_print = False
+    assert parser.sortArgs(namespace) == expected_result
 
-        expected_result = {}
-        expected_result["dev_print"] = False
-        expected_result["cmake_options"] = {
-            "CHEESE": "MELTED",
-            "OPTION": "FLAG"
-        }
 
-        result = parser.sortArgs(namespace)
+def testSortArgsPlatformOptions():
+    namespace = argparse.Namespace()
 
-        self.assertDictEqual(result, expected_result)
+    namespace.cmake_options = None
+    namespace.platform_json = None
+
+    options = {"key": "value"}
+
+    namespace.platform_options = json.dumps(options)
+    namespace.dev_print = False
+
+    expected_result = {
+        "dev_print": False,
+        "cmake_options": {},
+        "platform_options": options,
+    }
+
+    result = parser.sortArgs(namespace)
+
+    assert result == expected_result
+
+
+def testSortArgsCMakeOptions():
+    namespace = argparse.Namespace()
+
+    namespace.cmake_options = ["CHEESE=MELTED", "OPTION=FLAG"]
+
+    namespace.platform_json = None
+    namespace.platform_options = None
+    namespace.dev_print = False
+
+    expected_result = {}
+    expected_result["dev_print"] = False
+    expected_result["cmake_options"] = {"CHEESE": "MELTED", "OPTION": "FLAG"}
+
+    result = parser.sortArgs(namespace)
+
+    assert result, expected_result

@@ -14,7 +14,7 @@ def callSubProcess(command: list):
         RuntimeError: Raised if the process returns a non-zero exit code.
     """
     try:
-        subprocess.run(command, capture_output=False)
+        subprocess.run(command, capture_output=False, check=True)
     except subprocess.CalledProcessError as e:
         raise RuntimeError(e)
 
@@ -31,7 +31,7 @@ def cmake(*args, cmake_command: str = "cmake", **kwargs):
     try:
         callSubProcess(command)
     except FileNotFoundError:
-        raise IOSBuildError("CMake Not Found")
+        raise IOSBuildError("CMake not found")
     except RuntimeError as e:
         raise CMakeError(e)
 

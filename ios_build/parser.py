@@ -7,7 +7,7 @@ from ios_build.errors import IOSBuildError, ParserError
 
 def checkValues(val: str, options: dict):
     """
-    Check CMake Cache string is of the form {OPTION}={VALUE} and return 
+    Check CMake Cache string is of the form {OPTION}={VALUE} and return
     {OPTION} `k` and {VALUE} `v` if formatted correctly.
 
     Args:
@@ -37,7 +37,7 @@ def checkValues(val: str, options: dict):
     lk = len(k)
     lv = len(v)
 
-    if lk == 0 & lv == 0:
+    if lk == 0 and lv == 0:
         raise IOSBuildError(
             "Invalid CMake option: `{0}`, specify CMake Cache options with `-D OPTION=VALUE`".format(
                 val
@@ -64,7 +64,7 @@ def checkValues(val: str, options: dict):
         )
     if k in options:
         raise IOSBuildError("Option {} already specified".format(k))
-    
+
     return k, v
 
 

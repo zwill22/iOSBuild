@@ -3,6 +3,7 @@ import os
 
 from ios_build import build
 from ios_build.parser import parse
+from ios_build.errors import IOSBuildError
 
 
 @pytest.mark.parametrize("verbose", [True, False])
@@ -12,14 +13,14 @@ def testCheckPath(verbose):
     """
 
     # Non-existant directory
-    with pytest.raises(NotADirectoryError):
+    with pytest.raises(IOSBuildError, match="No such directory: fakeDir"):
         build.checkPath("fakeDir", verbose=verbose)
 
     # Does contain CMakeLists.txt
     build.checkPath("example", verbose=verbose)
 
     # Doesn't
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(IOSBuildError, match="no such file"):
         build.checkPath("tests", verbose=verbose)
 
 
@@ -43,7 +44,7 @@ def testSetupDirectory(tmp_path, verbose, clean):
 
 @pytest.mark.parametrize("verbose", [True, False])
 def testGetToolchain(tmp_path, verbose):
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ValueError):
         build.getToolchain(verbose=verbose, download_dir=tmp_path)
 
     toolchain_path = (
@@ -138,6 +139,7 @@ def testBuild(tmp_path, verbose):
     build.runBuild(**kwargs)
 
     checkBuild(build_path, install_path, **kwargs)
+
 
 # TODO Add quick tests for code only covered by slow tests
 @pytest.mark.slow
