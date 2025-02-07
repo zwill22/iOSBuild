@@ -28,7 +28,6 @@ jobs:
       - name: Commit and Push Changes
         run: |
           git add -A
-          git status
           if [[ `git status --porcelain` ]]; then
             git commit -m "Automatically added GitHub issue links to TODOs"
             git push origin ${{ github.ref }}
