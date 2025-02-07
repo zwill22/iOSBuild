@@ -3,7 +3,7 @@ from ios_build.build import runBuild
 
 from sys import platform
 
-from errors import IOSBuildError, CMakeError, XCodeBuildError
+from ios_build.errors import IOSBuildError, CMakeError, XCodeBuildError, ParserError
 
 
 def main(args=None):
@@ -25,6 +25,8 @@ def main(args=None):
     except IOSBuildError as error:
         print("Invalid input: {}".format(error))
         return 1
+    except ParserError:
+        return 2
     
     try:
         runBuild(**kwargs)

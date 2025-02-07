@@ -2,7 +2,70 @@ import json
 import argparse
 
 from ios_build.printer import printEmbeddedDict
-from ios_build.errors import IOSBuildError
+from ios_build.errors import IOSBuildError, ParserError
+
+
+def checkValues(val: str, options: dict):
+    """
+    Check CMake Cache string is of the form {OPTION}={VALUE} and return 
+    {OPTION} `k` and {VALUE} `v` if formatted correctly.
+
+    Args:
+        val (str): Input string
+        options (dict): Current dictionary of options (to check for repeated values)
+
+    Raises:
+        IOSBuildError: Thown if string is incorrectly formatted
+    """
+    keyVal = val.split("=")
+
+    if len(keyVal) < 2:
+        raise IOSBuildError(
+            "Invalid CMake option: {}, should be specified as `-D OPTION=VALUE`".format(
+                val
+            )
+        )
+    elif len(keyVal) > 2:
+        raise IOSBuildError(
+            "Invalid CMake option: {0}, should be specified as `-D {1}={2}`".format(
+                val, keyVal[0].strip(), keyVal[1].strip()
+            )
+        )
+
+    k = keyVal[0].strip()
+    v = keyVal[1].strip()
+    lk = len(k)
+    lv = len(v)
+
+    if lk == 0 & lv == 0:
+        raise IOSBuildError(
+            "Invalid CMake option: `{0}`, specify CMake Cache options with `-D OPTION=VALUE`".format(
+                val
+            )
+        )
+    elif lk == 0:
+        raise IOSBuildError(
+            "Invalid CMake option: {0}, should be specified as `-D OPTION={1}`".format(
+                val, v
+            )
+        )
+    elif lv == 0:
+        raise IOSBuildError(
+            "Invalid CMake option: {0}, should be specified as `-D {1}=VALUE`".format(
+                val, k
+            )
+        )
+
+    protected_keys = ["CMAKE_TOOLCHAIN_FILE", "PLATFORM", "CMAKE_INSTALL_PREFIX"]
+
+    if k in protected_keys:
+        raise IOSBuildError(
+            "CMake option {} is used by iOSBuild and cannot be specified".format(k)
+        )
+    if k in options:
+        raise IOSBuildError("Option {} already specified".format(k))
+    
+    return k, v
 
 
 def sortCMakeOptions(options: list) -> dict:
@@ -12,26 +75,13 @@ def sortCMakeOptions(options: list) -> dict:
     Args:
         options (list): List of all CMake cache variables as a list of the form `['key=value', ...]`
 
-    Raises:
-        IOSBuildError: Invalid input
-
     Returns:
         dict: CMake cache variables in dictionary form
     """
-    protected_keys = ["CMAKE_TOOLCHAIN_FILE", "PLATFORM", "CMAKE_INSTALL_PREFIX"]
     newOptions = {}
     for val in options:
-        keyVal = val.split("=")
-        if len(keyVal) != 2:
-            raise IOSBuildError("Invalid CMake option: {}".format(val))
-        k = keyVal[0].strip()
-        v = keyVal[1].strip()
-        if k in protected_keys:
-            raise IOSBuildError(
-                "CMake option {} cannot be specified in command line".format(k)
-            )
-        if k in newOptions:
-            raise IOSBuildError("Option {} already specified".format(k))
+        k, v = checkValues(val, newOptions)
+
         newOptions[k] = v
 
     return newOptions
@@ -69,7 +119,7 @@ def sortArgs(kwargs: argparse.Namespace) -> dict:
     for k, v in arg_dict.items():
         if k == "cmake_options":
             if v:
-                output["cmake_options"] = sortCMakeOptions(v)                
+                output["cmake_options"] = sortCMakeOptions(v)
             else:
                 output["cmake_options"] = {}
         elif k == "platform_json":
@@ -233,7 +283,7 @@ def parse(args=None) -> dict:
     """
     try:
         parsed_args = parseArgs(args)
-    except SystemExit as e:
-        raise IOSBuildError(e)
+    except SystemExit:
+        raise ParserError()
 
     return sortArgs(parsed_args)
