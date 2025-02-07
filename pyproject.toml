@@ -7,7 +7,7 @@ name = "iOSBuild"
 description = "A Python script for creating XCFrameworks for CMake projects"
 requires-python = ">= 3.9"
 authors = [ { name = "Z M Williams", email = "z.m.will@icloud.com" }]
-version = "0.1.0"
+version = "0.2.0"
 readme = "README.md"
 license = { file = "LICENSE" }
 dependencies = [
