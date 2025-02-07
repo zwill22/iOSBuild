@@ -138,6 +138,7 @@ def createFrameworks(install_dir: str, **kwargs):
 
 
 # TODO Install xcframework to new dir so install may be safely deleted
+# Issue URL: https://github.com/zwill22/iOSBuild/issues/1
 def cleanUp(build_dir: str, install_dir: str, clean_up: bool = False, **kwargs):
     """
     Function to clean up files after the program is run.
