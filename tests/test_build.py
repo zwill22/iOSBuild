@@ -98,12 +98,12 @@ def checkBuild(build_path, install_path, **kwargs):
     platforms = kwargs.get("platforms")
     for platform in platforms:
         header = os.path.join(install_path, platform, "library.h")
-        lib = os.path.join(install_path, platform, "libExampleLibrary.a")
+        lib = os.path.join(install_path, platform, "libiosbuildexample.a")
 
         assert os.path.isfile(header)
         assert os.path.isfile(lib)
 
-    framework = os.path.join(install_path, "libExampleLibrary.xcframework")
+    framework = os.path.join(install_path, "libiosbuildexample.xcframework")
     assert os.path.isdir(framework)
 
     # Test structure of xcframework
@@ -111,7 +111,7 @@ def checkBuild(build_path, install_path, **kwargs):
     for f in os.listdir(framework):
         path = os.path.join(framework, f)
         if os.path.isdir(path):
-            lib = os.path.join(path, "libExampleLibrary.a")
+            lib = os.path.join(path, "libiosbuildexample.a")
             assert os.path.isfile(lib)
             p += 1
         else:
