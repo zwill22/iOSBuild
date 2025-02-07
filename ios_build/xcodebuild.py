@@ -6,14 +6,8 @@ from ios_build import interface
 def checkXCodeBuild(**kwargs):
     """
     Check availability of `xcodebuild` command using `xcodebuild -version`.
-
-    Raises:
-        RuntimeError: Raised if command is not found
     """
-    try:
-        interface.xcodebuild("-version", **kwargs)
-    except FileNotFoundError as e:
-        raise RuntimeError("XCodeBuild not found: {}".format(e))
+    interface.xcodebuild("-version", **kwargs)
 
 
 def createXCFramework(

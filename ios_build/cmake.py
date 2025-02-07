@@ -7,14 +7,8 @@ from ios_build import interface
 def checkCMake(**kwargs):
     """
     Check the existence of cmake by calling the interface with the `--version` option.
-
-    Raises:
-        RuntimeError: Raised if CMake not found.
     """
-    try:
-        interface.cmake("--version", **kwargs)
-    except FileNotFoundError as e:
-        raise RuntimeError("CMake not found: {}".format(e))
+    interface.cmake("--version", **kwargs)
 
 
 def configure(

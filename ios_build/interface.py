@@ -1,5 +1,7 @@
 import subprocess
 
+from ios_build.errors import CMakeError, IOSBuildError, XCodeBuildError
+
 
 def callSubProcess(command: list):
     """
@@ -11,15 +13,10 @@ def callSubProcess(command: list):
     Raises:
         RuntimeError: Raised if the process returns a non-zero exit code.
     """
-    process = subprocess.Popen(command)
-
-    process.communicate()
-    if process.returncode != 0:
-        raise RuntimeError(
-            "Error occurred during subprocess {0}: {1} return non-zero exit status {2}".format(
-                command[0], " ".join(command), process.returncode
-            )
-        )
+    try:
+        subprocess.run(command, capture_output=False)
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(e)
 
 
 def cmake(*args, cmake_command: str = "cmake", **kwargs):
@@ -31,9 +28,15 @@ def cmake(*args, cmake_command: str = "cmake", **kwargs):
     """
     command = [cmake_command, *args]
     print(" ".join(command))
-    callSubProcess(command)
+    try:
+        callSubProcess(command)
+    except FileNotFoundError:
+        raise IOSBuildError("CMake Not Found")
+    except RuntimeError as e:
+        raise CMakeError(e)
 
 
+# TODO No error thrown when xcframwork already exists
 def xcodebuild(*args, xcode_build_command: str = "xcodebuild", **kwargs):
     """
     Runs `xcodebuild` using subprocess.
@@ -43,4 +46,9 @@ def xcodebuild(*args, xcode_build_command: str = "xcodebuild", **kwargs):
     """
     command = [xcode_build_command, *args]
     print(" ".join(command))
-    callSubProcess(command)
+    try:
+        callSubProcess(command)
+    except FileNotFoundError:
+        raise IOSBuildError("XCodeBuild not found")
+    except RuntimeError as e:
+        raise XCodeBuildError(e)

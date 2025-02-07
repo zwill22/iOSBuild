@@ -6,6 +6,7 @@ from ios_build import cmake
 from ios_build import search
 from ios_build import xcodebuild
 from ios_build.printer import printValue, tick, cross
+from ios_build.errors import IOSBuildError
 
 # TODO Let a URL be a valid path
 def checkPath(path: str, verbose: bool = False, **kwargs):
@@ -22,11 +23,10 @@ def checkPath(path: str, verbose: bool = False, **kwargs):
         verbose (bool, optional): Whether to print details. Defaults to False.
 
     Raises:
-        NotADirectoryError: Raised if path is not valid.
-        FileNotFoundError: Raised if the path does not contain a `CMakeLists.txt` file.
+        IOSBuildError: Raised if path is not a valid CMake project directory.
     """
     if not os.path.isdir(path):
-        raise NotADirectoryError("{} is not a directory".format(path))
+        raise IOSBuildError("No such directory: {}".format(path))
 
     if verbose:
         print("Running iOS Build...")
@@ -40,9 +40,7 @@ def checkPath(path: str, verbose: bool = False, **kwargs):
     else:
         if verbose:
             cross()
-        raise FileNotFoundError(
-            "Path is not a valid CMake Project, no such file:\t{}".format(cmake_path)
-        )
+        raise IOSBuildError("Invalid CMake project provided, no such file:\t{}".format(cmake_path))
 
 
 def setupDirectory(
@@ -105,12 +103,13 @@ def getToolchain(
         str: Path to toolchain file.
     """
     if not toolchain:
-        raise RuntimeError("Toolchain file not found")
+        raise ValueError("Toolchain file not found")
 
     filename = os.path.join(download_dir, "ios.toolchain.cmake")
 
     if verbose:
         printValue("Downloading toolchain file:", toolchain)
+    # TODO Deal with exceptions from urlretrieve
     file, output = urlretrieve(toolchain, filename=filename)
     filepath = os.path.abspath(file)
     if verbose:
@@ -191,12 +190,8 @@ def runBuild(
     """
     cmake.checkCMake(**kwargs)
     xcodebuild.checkXCodeBuild(**kwargs)
-    try:
-        checkPath(**kwargs)
-    except NotADirectoryError as e:
-        raise RuntimeError(e)
-    except FileNotFoundError as e:
-        raise RuntimeError(e)
+    checkPath(**kwargs)
+
 
     build_dir = setupDirectory(build_prefix, **kwargs)
     install_dir = setupDirectory(install_prefix, **kwargs)

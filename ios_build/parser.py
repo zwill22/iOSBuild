@@ -2,6 +2,7 @@ import json
 import argparse
 
 from ios_build.printer import printEmbeddedDict
+from ios_build.errors import IOSBuildError
 
 
 def sortCMakeOptions(options: list) -> dict:
@@ -12,27 +13,25 @@ def sortCMakeOptions(options: list) -> dict:
         options (list): List of all CMake cache variables as a list of the form `['key=value', ...]`
 
     Raises:
-        ValueError: Raised if CMake option is not formatted as `k = v`
-        ValueError: Raised if a protected CMake option is used, i.e one already specified by this program.
-        ValueError: Raised if an option is repeated.
+        IOSBuildError: Invalid input
 
     Returns:
-        dict: _description_
+        dict: CMake cache variables in dictionary form
     """
     protected_keys = ["CMAKE_TOOLCHAIN_FILE", "PLATFORM", "CMAKE_INSTALL_PREFIX"]
     newOptions = {}
     for val in options:
         keyVal = val.split("=")
         if len(keyVal) != 2:
-            raise ValueError("Invalid CMake option: {}".format(val))
+            raise IOSBuildError("Invalid CMake option: {}".format(val))
         k = keyVal[0].strip()
         v = keyVal[1].strip()
         if k in protected_keys:
-            raise ValueError(
+            raise IOSBuildError(
                 "CMake option {} cannot be specified in command line".format(k)
             )
         if k in newOptions:
-            raise ValueError("Option {} already specified".format(k))
+            raise IOSBuildError("Option {} already specified".format(k))
         newOptions[k] = v
 
     return newOptions
@@ -62,9 +61,6 @@ def sortArgs(kwargs: argparse.Namespace) -> dict:
     Args:
         kwargs (argparse.Namespace): The input arguments returned from `argparse`
 
-    Raises:
-        RuntimeError: Raised if input is incorrect.
-
     Returns:
         dict: All options for the program in dictionary format.
     """
@@ -73,10 +69,7 @@ def sortArgs(kwargs: argparse.Namespace) -> dict:
     for k, v in arg_dict.items():
         if k == "cmake_options":
             if v:
-                try:
-                    output["cmake_options"] = sortCMakeOptions(v)
-                except ValueError as e:
-                    raise RuntimeError("Invalid command line options: {}".format(e))
+                output["cmake_options"] = sortCMakeOptions(v)                
             else:
                 output["cmake_options"] = {}
         elif k == "platform_json":
@@ -233,7 +226,7 @@ def parse(args=None) -> dict:
         args (_type_, optional): Pass arguments directly to function (for testing). Defaults to None.
 
     Raises:
-        RuntimeError: Raised if argparse throws an exit signal
+        IOSBuildError: Raised if argparse throws an exit signal
 
     Returns:
         dict: Arguments sorted into a Python dictionary
@@ -241,6 +234,6 @@ def parse(args=None) -> dict:
     try:
         parsed_args = parseArgs(args)
     except SystemExit as e:
-        raise RuntimeError(e)
+        raise IOSBuildError(e)
 
     return sortArgs(parsed_args)
