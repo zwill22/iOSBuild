@@ -9,8 +9,8 @@ message(STATUS "CMAKE_SOURCE_DIR: ${CMAKE_SOURCE_DIR}")
 message(STATUS "CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
 message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
-add_library(ExampleLibrary)
-target_include_directories(ExampleLibrary PUBLIC ${CMAKE_SOURCE_DIR}/include)
+add_library(iosbuildexample)
+target_include_directories(iosbuildexample PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 add_subdirectory(src)
 
@@ -19,6 +19,6 @@ install(
     DESTINATION ${CMAKE_INSTALL_PREFIX}
 )
 install(
-    TARGETS ExampleLibrary
+    TARGETS iosbuildexample
     DESTINATION ${CMAKE_INSTALL_PREFIX}
 )
