@@ -11,6 +11,7 @@ version = "0.2.0"
 readme = "README.md"
 license = { file = "LICENSE" }
 dependencies = [
+    "requests",
     "cmake>=3.22"
 ]
 metadata_version = "2.4"

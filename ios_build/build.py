@@ -1,10 +1,10 @@
 import os
 import shutil
-from urllib.request import urlretrieve
 
 from ios_build import cmake
 from ios_build import search
 from ios_build import xcodebuild
+from ios_build.toolchain import getToolchain
 from ios_build.printer import printValue, tick, cross
 from ios_build.errors import IOSBuildError
 
@@ -81,43 +81,6 @@ def setupDirectory(
         tick()
 
     return new_dir
-
-
-def getToolchain(
-    verbose: bool = False, toolchain: str = None, download_dir=".", **kwargs
-) -> str:
-    """
-    Retrieve the toolchain file for building CMake projects for Apple
-    operating systems. The default version is specified in the parser.
-    The remaining program is based on this version by Leetal.
-
-    Args:
-        verbose (bool, optional): Print output. Defaults to False.
-        toolchain (str, optional): Path or URL to toolchain file. Defaults to None.
-        download_dir (str, optional): Directory to download file to. Defaults to ".".
-
-    Raises:
-        ValueError: Raised if no toolchain file is specified.
-
-    Returns:
-        str: Path to toolchain file.
-    """
-    if not toolchain:
-        raise ValueError("Toolchain file not found")
-
-    filename = os.path.join(download_dir, "ios.toolchain.cmake")
-
-    if verbose:
-        printValue("Downloading toolchain file:", toolchain)
-    # TODO Deal with exceptions from urlretrieve
-    file, output = urlretrieve(toolchain, filename=filename)
-    filepath = os.path.abspath(file)
-    if verbose:
-        tick()
-        printValue("Toolchain file saved to:", filepath)
-        tick()
-
-    return os.path.abspath(filepath)
 
 
 def createFrameworks(install_dir: str, **kwargs):

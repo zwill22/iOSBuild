@@ -42,22 +42,6 @@ def testSetupDirectory(tmp_path, verbose, clean):
     assert os.path.isdir(directory2)
 
 
-@pytest.mark.parametrize("verbose", [True, False])
-def testGetToolchain(tmp_path, verbose):
-    with pytest.raises(ValueError):
-        build.getToolchain(verbose=verbose, download_dir=tmp_path)
-
-    toolchain_path = (
-        "https://github.com/leetal/ios-cmake/blob/master/ios.toolchain.cmake?raw=true"
-    )
-    file = build.getToolchain(
-        verbose=verbose, download_dir=tmp_path, toolchain=toolchain_path
-    )
-
-    assert file == os.path.join(tmp_path, "ios.toolchain.cmake")
-    assert os.path.isfile(file)
-
-
 def testCleanUp(tmp_path):
     assert os.path.isdir(tmp_path)
 
