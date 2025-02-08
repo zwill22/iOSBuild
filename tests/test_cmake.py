@@ -72,7 +72,7 @@ def checkConfig(platform_dir: str, generator: str):
     elif generator == "Ninja":
         assert checkFile("build.ninja")
 
-
+# TODO Check which generators are available before test
 generators = ["Xcode", "Unix Makefiles", "Ninja"]
 platforms = ["OS64"]
 platform_options = [{}, {"OS64": {}}]
@@ -86,7 +86,7 @@ cmake_options = [{}, {"OPTION": "VALUE"}]
 @pytest.mark.parametrize("platform_options", platform_options)
 @pytest.mark.parametrize("cmake_options", cmake_options)
 def testConfigure(
-    tmp_path, generator, platform, verbose, platform_options, cmake_options, toolchain_path
+    tmp_path, generator, platform, verbose, platform_options, cmake_options, toolchain_file
 ):
     path = "example"
 
@@ -96,7 +96,7 @@ def testConfigure(
     cmake.configure(
         path=path,
         platform=platform,
-        toolchain_path=toolchain_path,
+        toolchain_path=toolchain_file,
         install_dir=install_dir,
         platform_dir=platform_dir,
         verbose=verbose,
