@@ -28,6 +28,12 @@ classifiers = [
     "Programming Language :: Python :: 3.13"
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest"
+]
+
+
 [project.urls]
 Repository = "https://github.com/zwill22/iOSBuild"
 Documentation = "https://iosbuild.readthedocs.io/en/latest/"
