@@ -4,16 +4,17 @@ import pytest
 from ios_build import search
 
 
-def createEmptyFile(*path):
-
+def createEmptyFile(*path) -> str:
     filepath = os.path.join(*path)
 
     if not os.path.exists(filepath):
         head, _ = os.path.split(filepath)
         if not os.path.isdir(head):
             os.makedirs(head)
-        with open(filepath, 'w'):
+        with open(filepath, "w"):
             pass
+
+    return filepath
 
 
 def checkPaths(path: str, lib_paths):
@@ -26,7 +27,6 @@ def checkPaths(path: str, lib_paths):
 
 
 def testPlatformLibraries(tmp_path):
-
     empty_libs = search.findPlatformLibraries(tmp_path)
 
     assert len(empty_libs) == 0
@@ -37,12 +37,10 @@ def testPlatformLibraries(tmp_path):
     checkPaths(tmp_path, lib_paths)
 
     # Create "static library file"
-    createEmptyFile(tmp_path, "library.a")
-    lib_paths["library"] = os.path.join(tmp_path, "library.a")
+    lib_paths["library"] = createEmptyFile(tmp_path, "library.a")
     checkPaths(tmp_path, lib_paths)
 
-    createEmptyFile(tmp_path, "directory", "another_lib.a")
-    lib_paths["another_lib"] = os.path.join(tmp_path, "directory", "another_lib.a")
+    lib_paths["another_lib"] = createEmptyFile(tmp_path, "directory", "another_lib.a")
     checkPaths(tmp_path, lib_paths)
 
 
@@ -62,26 +60,18 @@ def testInvertDict():
         }
     }
 
-    expected_output = {
-        "InnerKey1": {
-            "Key1": "Val1"
-        }
-    }
+    expected_output = {"InnerKey1": {"Key1": "Val1"}}
 
     assert search.invertDict(input_dict) == expected_output
 
-    input_dict["Key2"] = {
-        "InnerKey2": "Val3"
-    }
+    input_dict["Key2"] = {"InnerKey2": "Val3"}
 
-    expected_output["InnerKey2"] = {
-        "Key2": "Val3"
-    }
+    expected_output["InnerKey2"] = {"Key2": "Val3"}
 
     assert search.invertDict(input_dict) == expected_output
 
     input_dict["Key3"] = {}
-    
+
     assert search.invertDict(input_dict) == expected_output
 
     input_dict["Key3"]["InnerKey1"] = "Val2"
@@ -102,19 +92,22 @@ def testFindLibraries(tmp_path, verbose):
 
     expected_output = {}
     for platform in platforms:
-        expected_output[platform] = os.path.join(tmp_path, platform, "libexample.a")
-        createEmptyFile(expected_output[platform])
+        expected_output[platform] = createEmptyFile(tmp_path, platform, "libexample.a")
         
-    assert search.findlibraries(tmp_path, platforms=platforms, verbose=verbose) == {"libexample": expected_output}
+    assert search.findlibraries(tmp_path, platforms=platforms, verbose=verbose) == {
+        "libexample": expected_output
+    }
 
     platforms.append("bsd")
     os.makedirs(os.path.join(tmp_path, "bsd"))
 
-    assert search.findlibraries(tmp_path, platforms=platforms, verbose=verbose) == {"libexample": expected_output}
+    assert search.findlibraries(tmp_path, platforms=platforms, verbose=verbose) == {
+        "libexample": expected_output
+    }
 
-    createEmptyFile(tmp_path, "bsd", "lib2.a")
+    lib2_path = createEmptyFile(tmp_path, "bsd", "lib2.a")
 
     assert search.findlibraries(tmp_path, platforms=platforms, verbose=verbose) == {
         "libexample": expected_output,
-        "lib2": {"bsd": os.path.join(tmp_path, "bsd", "lib2.a")}
+        "lib2": {"bsd": lib2_path},
     }

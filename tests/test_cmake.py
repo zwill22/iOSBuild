@@ -72,6 +72,7 @@ def checkConfig(platform_dir: str, generator: str):
     elif generator == "Ninja":
         assert checkFile("build.ninja")
 
+
 # TODO Check which generators are available before test
 generators = ["Xcode", "Unix Makefiles", "Ninja"]
 platforms = ["OS64"]
@@ -86,7 +87,13 @@ cmake_options = [{}, {"OPTION": "VALUE"}]
 @pytest.mark.parametrize("platform_options", platform_options)
 @pytest.mark.parametrize("cmake_options", cmake_options)
 def testConfigure(
-    tmp_path, generator, platform, verbose, platform_options, cmake_options, toolchain_file
+    tmp_path,
+    generator,
+    platform,
+    verbose,
+    platform_options,
+    cmake_options,
+    toolchain_file,
 ):
     path = "example"
 
@@ -109,13 +116,17 @@ def testConfigure(
 
 
 @pytest.mark.parametrize("verbose", (True, False))
-def testBuild(tmp_path, verbose):
+def testBuild(tmp_path, verbose, capfd):
     with pytest.raises(CMakeError):
         cmake.build(platform_dir=str(tmp_path), verbose=verbose)
+    captured = capfd.readouterr()
+    assert captured.err == "Error: could not load cache\n"
 
 
 @pytest.mark.parametrize("verbose", (True, False))
-def testInstall(tmp_path, verbose):
+def testInstall(tmp_path, verbose, capfd):
     with pytest.raises(CMakeError):
         cmake.install(platform_dir=str(tmp_path), verbose=verbose)
-
+    captured = capfd.readouterr()
+    assert "CMake Error: Not a file:" in captured.err
+    assert "cmake_install.cmake" in captured.err
