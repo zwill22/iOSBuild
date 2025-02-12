@@ -42,7 +42,7 @@ Documentation = "https://iosbuild.readthedocs.io/en/latest/"
 packages = ["ios_build"]
 
 [project.scripts]
-ios_build = "ios_build.run:main"
+ios_build = "ios_build.run:runner"
 
 [tool.pytest.ini_options]
 minversion = "6.0"

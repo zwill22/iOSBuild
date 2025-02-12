@@ -6,9 +6,9 @@ from sys import platform
 from ios_build.errors import IOSBuildError, CMakeError, XCodeBuildError, ParserError
 
 
-def main(args=None):
+def runner(args=None):
     """
-    Main iOSBuild function.
+    iOSBuild runner.
 
     Args:
         args (_type_, optional): Optional arguments for testing. Defaults to None.
@@ -46,4 +46,4 @@ def main(args=None):
 
 
 if __name__ == "__main__":
-    main()
+    runner()

@@ -1,5 +1,5 @@
 import pytest
-from ios_build.run import main as runner
+from ios_build.run import runner
 
 
 def checkRunner(args, exit_code, capfd=None, err=None, out=None):
