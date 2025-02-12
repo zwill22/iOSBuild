@@ -1,3 +1,5 @@
+import tempfile
+
 def printValue(text, value, end="\t"):
     """
     Print a value inline with a fixed width for key.
@@ -36,5 +38,7 @@ def printEmbeddedDict(input_dict: dict):
         if type(v) is dict:
             print("{}:".format(k))
             printEmbeddedDict(v)
+        elif type(v) is tempfile.TemporaryDirectory:
+            printValue(k, v.name, end='\n')
         else:
             printValue(k, v, end="\n")

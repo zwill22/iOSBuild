@@ -44,7 +44,7 @@ def checkPath(path: str, verbose: bool = False, **kwargs):
 
 
 def setupDirectory(
-    dir_prefix: str,
+    dir_prefix,
     verbose: bool = False,
     clean: bool = False,
     prefix: str = None,
@@ -59,7 +59,7 @@ def setupDirectory(
     to `prefix`.
 
     Args:
-        dir_prefix (str): Relative or absolute path to
+        dir_prefix: Path to directory
         verbose (bool, optional): Print output. Defaults to False.
         clean (bool, optional): Clean any existing directory at desired location. Defaults to False.
         prefix (str, optional): Optional path prefix. Defaults to None.
@@ -68,7 +68,11 @@ def setupDirectory(
         str: _description_
     """
     path = os.path.join(prefix, dir_prefix) if prefix else dir_prefix
-    new_dir = os.path.abspath(path)
+    try:
+        new_dir = os.path.abspath(path)
+    except TypeError:
+        new_dir = path.name
+
     if os.path.isdir(new_dir):
         if clean:
             shutil.rmtree(new_dir)
@@ -83,7 +87,7 @@ def setupDirectory(
     return new_dir
 
 
-def createFrameworks(install_dir: str, **kwargs):
+def createFrameworks(install_dir: str, output_dir: str = None,  **kwargs):
     """
     Searches for static libraries in the `install_dir` and uses them to create 
     an `xcframework` for each. The framework contains versions of the library 
@@ -92,16 +96,30 @@ def createFrameworks(install_dir: str, **kwargs):
     Args:
         install_dir (str): Parent directory containing static libraries for all platforms.
     """
-    # TODO Add silent option
-    print("Creating XCFrameworks...")
+    if not output_dir:
+        raise ValueError("No output directory specified")
+    
+    verbose = kwargs.get("verbose", False)
+    quiet = kwargs.get("quiet", False)
+    if verbose:
+        print("Creating XCFrameworks...")
     libraries = search.findlibraries(install_dir, **kwargs)
+
+    n = 0
     for lib, files in libraries.items():
-        xcodebuild.createXCFramework(install_dir, lib, files, **kwargs)
+        xcodebuild.createXCFramework(output_dir, lib, files, **kwargs)
+        if not quiet:
+            print("Created XC Framework: {}.xcframwork".format(os.path.join(output_dir, lib)))
+        n += 1
+    if n == 0:
+        if not quiet:
+            print("No frameworks created", end='\t')
+            cross()
 
 
 # TODO Install xcframework to new dir so install may be safely deleted
 # Issue URL: https://github.com/zwill22/iOSBuild/issues/1
-def cleanUp(build_dir: str, install_dir: str, clean_up: bool = False, **kwargs):
+def cleanUp(build_dir: str, install_dir: str, clean_up: bool = False, quiet: bool = False, **kwargs):
     """
     Function to clean up files after the program is run.
 
@@ -110,11 +128,13 @@ def cleanUp(build_dir: str, install_dir: str, clean_up: bool = False, **kwargs):
         install_dir (str): Parent directory of installations.
         clean_up (bool, optional): Whether to remove the above directories. Defaults to False.
     """
-    print("Cleaning Up", end="\t")
+    if not quiet:
+        print("Cleaning Up", end="\t")
     if clean_up:
         shutil.rmtree(build_dir)
         shutil.rmtree(install_dir)  # TODO Remove install_dir?
-    tick()
+    if not quiet:
+        tick()
 
 
 #def build(build_dir: str, install_dir: str, toolchain: str, path: str = None, platforms: list[str] = None, **kwargs):
@@ -130,9 +150,14 @@ def build(build_dir: str, platforms: list[str] = None, **kwargs):
     Raises:
         RuntimeError: _description_
     """
+    quiet = kwargs.get("quiet", False)
+
     if not platforms:
         raise RuntimeError("No platforms specified")
     for platform in platforms:
+        if not quiet:
+            print("Platform:\t{}".format(platform))
+
         platform_dir = setupDirectory(platform, prefix=build_dir, **kwargs)
 
         cmake.runCMake(platform=platform, platform_dir=platform_dir, **kwargs)
@@ -154,7 +179,6 @@ def runBuild(
     cmake.checkCMake(**kwargs)
     xcodebuild.checkXCodeBuild(**kwargs)
     checkPath(**kwargs)
-
 
     build_dir = setupDirectory(build_prefix, **kwargs)
     install_dir = setupDirectory(install_prefix, **kwargs)

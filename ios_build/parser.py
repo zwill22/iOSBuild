@@ -1,4 +1,6 @@
+import os
 import json
+import tempfile
 import argparse
 
 from ios_build.printer import printEmbeddedDict
@@ -133,7 +135,7 @@ def sortArgs(kwargs: argparse.Namespace) -> dict:
         else:
             output[k] = v
 
-    if kwargs.dev_print:
+    if kwargs.verbose:
         print("Command line options:")
         printEmbeddedDict(output)
 
@@ -157,25 +159,26 @@ def parseArgs(args=None):
         """,
         epilog="""
         Thanks for using iOSBuild.
-        """,
+        """
     )
+
+    # TODO Allow path to be a URL
     parser.add_argument("path", help="Enter path to repository")
-    parser.add_argument(
-        "-v", "--verbose", help="Print verbose output", action="store_true"
+
+    output_options = parser.add_mutually_exclusive_group()
+    output_options.add_argument(
+        "-v", "--verbose",
+        help="Print verbose output",
+        action="store_true"
     )
-    parser.add_argument(
-        "--cmake",
-        "-C",
-        help="Cmake command, to specify a non-standard cmake command",
-        default="cmake",
-        dest="cmake_command",
+
+    output_options.add_argument(
+        "--quiet",
+        "-q",
+        help="Hide output",
+        action="store_true"
     )
-    parser.add_argument(
-        "--clean",
-        "-c",
-        help="Cleans the build prefix directory before configuration",
-        action="store_true",
-    )
+
     parser.add_argument(
         "--toolchain",
         "-t",
@@ -183,31 +186,62 @@ def parseArgs(args=None):
         default="https://github.com/leetal/ios-cmake/blob/master/ios.toolchain.cmake?raw=true",
     )
 
-    # TODO: Working directory no longer used, toolchain downloaded to current dir only, link with prefix?
     parser.add_argument(
-        "--working-dir",
-        "-w",
-        help="Set working directory, defaults to current directory",
+        "--toolchain_dest",
+        help="Set download destination for toolchain file",
+        default=tempfile.TemporaryDirectory()
     )
+
+    parser.add_argument(
+        "--cmake",
+        "-C",
+        help="Cmake command, to specify a non-standard cmake command",
+        default="cmake",
+        dest="cmake_command",
+    )
+
+    parser.add_argument(
+        "--clean",
+        "-c",
+        help="Cleans the build prefix directory before configuration",
+        action="store_true",
+    )
+
     parser.add_argument(
         "--build-dir",
         "-b",
         help="Build prefix for CMake absolute path or relative to path",
-        default="build",
         dest="build_prefix",
+        default=tempfile.TemporaryDirectory()
     )
+
     parser.add_argument(
         "--install-dir",
         "-i",
         help="Prefix directory for installation, absolute path or relative to path",
-        default="install",
         dest="install_prefix",
+        default=tempfile.TemporaryDirectory()
     )
+
+    parser.add_argument(
+        "--output-dir",
+        "-o",
+        help="Directory in which to save output frameworks, defaults to current directory",
+        default=os.getcwd()
+    )
+
+    parser.add_argument(
+        "--overwrite",
+        help="Overwrite any existing frameworks in the output directory",
+        action="store_true"
+    )
+
     parser.add_argument(
         "--clean-up",
-        help="Cleans the build directory after completion",
+        help="Cleans up all build files after completion",
         action="store_true",
     )
+
     # TODO Add no-install option
 
     platforms = [
@@ -234,16 +268,18 @@ def parseArgs(args=None):
     default_platforms = ["OS64", "SIMULATORARM64", "MAC_ARM64"]
     parser.add_argument(
         "--platforms",
-        help="Specify a list of platforms to build for (default={0})".format(
+        help="Specify a list of platforms to build for (default={0}), possible options match ".format(
             default_platforms
         ),
         default=default_platforms,
         nargs="+",
         choices=platforms,
     )
+
+    # TODO implement parse known args and pass unknown args to CMake?
     parser.add_argument(
         "-D",
-        help="Global ptions for CMake, passed directly to CMake at the configure stage",
+        help="Global options for CMake, passed directly to CMake at the configure stage",
         action="append",
         dest="cmake_options",
     )
@@ -256,13 +292,6 @@ def parseArgs(args=None):
     json_options.add_argument(
         "--platform-options",
         help="Specify platform specific CMake options inline in JSON format",
-    )
-
-    devops = parser.add_argument_group(
-        "Development options", description="Options for developers"
-    )
-    devops.add_argument(
-        "--dev-print", "-d", action="store_true", help="Print developer output"
     )
 
     return parser.parse_args(args=args)

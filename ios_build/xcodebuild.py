@@ -1,6 +1,7 @@
 import os
 
 from ios_build import interface
+from ios_build.errors import IOSBuildError
 
 
 def checkXCodeBuild(**kwargs):
@@ -26,6 +27,8 @@ def createXCFramework(
         files (dict[str, str]): All library files in a dictionary
     """
     output_file = os.path.join(install_dir, "{}.xcframework".format(lib))
+    if os.path.isdir(output_file):
+        raise IOSBuildError("Output file already exists: {}".format(output_file))
     commands = ["-create-xcframework"]
     for library in files.values():
         commands.append("-library")
