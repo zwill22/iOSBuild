@@ -1,6 +1,6 @@
 import os
 
-from ios_build import printer
+from ios_build.printer import Printer
 from ios_build import interface
 
 
@@ -52,22 +52,19 @@ def configure(
         cmake_options (dict, optional): CMake cache options. Defaults to {}.
         generator (str, optional): CMake generator. Defaults to "Xcode".
     """
-    verbose = kwargs.get("verbose", False)
-    quiet = kwargs.get("quiet", False)
+    printer = kwargs.get("printer", Printer())
+
     platform_specific_options = {}
     if platform in platform_options:
         platform_specific_options = platform_options[platform]
 
     checkInput(path, platform, toolchain_path, install_dir, platform_dir)
 
-    if verbose:
-        printer.printValue("Platform:", platform, end="\n")
-        printer.printValue("Generator:", generator, end="\n")
-        if cmake_options:
-            printer.printEmbeddedDict(cmake_options)
-        printer.printEmbeddedDict(platform_options)
-
-        print("Running CMake configuration...")
+    printer.printValue("Platform:", platform, end="\n", verbosity=1)
+    printer.printValue("Generator:", generator, end="\n", verbosity=1)
+    printer.printEmbeddedDict(cmake_options, verbosity=1)
+    printer.printEmbeddedDict(platform_options, verbosity=1)
+    printer.print("Running CMake configuration...", verbosity=1)
 
     global_options = ["-D{0}={1}".format(k, v) for k, v in cmake_options.items()]
     specific_options = [
@@ -84,9 +81,8 @@ def configure(
         platform_dir,
     ]
     interface.cmake(*global_options, *specific_options, *local_options, path, **kwargs)
-    if not quiet:
-        print("CMake configuration complete", end="\t")
-        printer.tick()
+    printer.print("CMake configuration complete", end="\t")
+    printer.tick()
 
 
 def build(platform_dir: str = None, config: str = "Release", **kwargs):
@@ -98,16 +94,13 @@ def build(platform_dir: str = None, config: str = "Release", **kwargs):
         platform_dir (str, optional): Directory containing CMake configuration (CMakeCache.txt). Defaults to None.
         config (str, optional): CMake configuration to build. Defaults to "Release".
     """
-    verbose = kwargs.get("verbose")
-    quiet = kwargs.get("quiet")
+    printer = kwargs.get("printer", Printer())
 
-    if verbose:
-        print("Running CMake Build...\n")
+    printer.print("Running CMake Build...\n", verbosity=1)
 
     interface.cmake("--build", platform_dir, "--config", config, **kwargs)
-    if not quiet:
-        print("CMake Build complete\t", end="\t")
-        printer.tick()
+    printer.print("CMake Build complete\t", end="\t")
+    printer.tick()
 
 
 def install(platform_dir: str = None, config: str = "Release", **kwargs):
@@ -120,14 +113,11 @@ def install(platform_dir: str = None, config: str = "Release", **kwargs):
         platform_dir (str, optional): CMake build directory containing `CMakeCache.txt`. Defaults to None.
         config (str, optional): CMake configuration. Defaults to "Release".
     """
-    verbose = kwargs.get("verbose", False)
-    quiet = kwargs.get("quiet", False)
-    if verbose:
-        print("Commencing install...")
+    printer = kwargs.get("printer", Printer())
+    printer.print("Commencing install...", verbosity=1)
     interface.cmake("--install", platform_dir, "--config", config, **kwargs)
-    if not quiet:
-        print("CMake installation complete", end="\t")
-        printer.tick()
+    printer.print("CMake installation complete", end="\t")
+    printer.tick()
 
 
 def runCMake(**kwargs):

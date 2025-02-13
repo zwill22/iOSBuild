@@ -3,7 +3,6 @@ import json
 import tempfile
 import argparse
 
-from ios_build.printer import printEmbeddedDict
 from ios_build.errors import IOSBuildError, ParserError
 
 
@@ -116,6 +115,8 @@ def sortArgs(kwargs: argparse.Namespace) -> dict:
     Returns:
         dict: All options for the program in dictionary format.
     """
+    print_level = 0
+
     arg_dict = vars(kwargs)
     output = {}
     for k, v in arg_dict.items():
@@ -132,14 +133,15 @@ def sortArgs(kwargs: argparse.Namespace) -> dict:
             if v:
                 assert arg_dict["platform_json"] is None
                 output["platform_options"] = json.loads(v)
+        elif k == "quiet":
+            if v:
+                print_level = -1
+        elif k == "verbose":
+            print_level += v
         else:
             output[k] = v
-
-    if kwargs.verbose:
-        print("Command line options:")
-        printEmbeddedDict(output)
-
-    return output
+    
+    return {**output, "print_level": print_level}
 
 
 def parseArgs(args=None):
@@ -169,7 +171,8 @@ def parseArgs(args=None):
     output_options.add_argument(
         "-v", "--verbose",
         help="Print verbose output",
-        action="store_true"
+        action="count",
+        default=0
     )
 
     output_options.add_argument(
@@ -297,6 +300,7 @@ def parseArgs(args=None):
     return parser.parse_args(args=args)
 
 
+#TODO Move to separate module
 def parse(args=None) -> dict:
     """
     Parse command-line arguments.

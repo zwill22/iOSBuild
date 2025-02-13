@@ -1,44 +1,115 @@
 import tempfile
+import sys
+import datetime
 
-def printValue(text, value, end="\t"):
+
+class Printer:
     """
-    Print a value inline with a fixed width for key.
-
-    Args:
-        text (_type_): Key for printed value
-        value (_type_): value to be printed
-        end (str, optional): End character for `print`. Defaults to "\t".
+    Class to handle all printing using a verbosity scale to determine what to print
     """
-    print("{0:<32} {1}".format(text, value), end=end)
 
+    def __init__(self, print_level=0):
+        """
+        Initialise printer based on desired verbosity
 
-def tick():
-    """
-    Print a \U00002705 character
-    """
-    print("\U00002705")
+        Args:
+            verbose (int, optional): Verbosity level for printer. Defaults to None.
+            quiet (bool, optional): Set output to quiet. Defaults to False.
 
+        Raises:
+            PrinterError: Raised if both quiet and verbose specified simultaneously
+        """
+        self.verbosity = print_level
+        self.width = 120
 
-def cross():
-    """
-    Print a \U0000274c character
-    """
-    print("\U0000274c")
+    def print(self, value, verbosity=0, **kwargs):
+        if self.verbosity >= verbosity:
+            print(value, **kwargs)
 
+    def printValue(self, text, value, verbosity=0, end="\t", **kwargs):
+        """
+        Print a value inline with a fixed width for key.
+        Args:
+            text (str): Key for printed value
+            value (str): value to be printed
+            verbosity (int): The level of verbosity at which the statement should be printed. Defaults to 0.
+            end (str, optional): End character for `print`. Defaults to "\t".
+        """
+        if self.verbosity >= verbosity:
+            print("{0:<32} {1}".format(text, value), end=end, **kwargs)
 
-def printEmbeddedDict(input_dict: dict):
-    """
-    Print a dictionary using a recursive algorithm
-    for embedded dictionaries.
+    def tick(self, verbosity=0):
+        """
+        Print a \U00002705 character
 
-    Args:
-        input_dict (dict): Input dictionary
-    """
-    for k, v in input_dict.items():
-        if type(v) is dict:
-            print("{}:".format(k))
-            printEmbeddedDict(v)
-        elif type(v) is tempfile.TemporaryDirectory:
-            printValue(k, v.name, end='\n')
-        else:
-            printValue(k, v, end="\n")
+        Args:
+            verbosity (int): The level of verbosity at which the statement should be printed. Defaults to 0.
+        """
+        if self.verbosity >= verbosity:
+            print("\U00002705")
+
+    def cross(self, verbosity=0):
+        """
+        Print a \U0000274c character
+
+        Args:
+            verbosity (int): The level of verbosity at which the statement should be printed. Defaults to 0.
+        """
+        if self.verbosity >= verbosity:
+            print("\U0000274c")
+
+    def printEmbeddedDict(
+        self, input_dict: dict, verbosity: int = 0, header: str = None
+    ):
+        """
+        Print a dictionary using a recursive algorithm
+        for embedded dictionaries.
+
+        Args:
+            input_dict (dict): Input dictionary
+            verbosity (int): The level of verbosity at which the statement should be printed. Defaults to 0.
+            he
+        """
+        if self.verbosity < verbosity:
+            return
+        if header:
+            print("{}:".format(header))
+        for k, v in input_dict.items():
+            if type(v) is dict:
+                print("{}:".format(k))
+                self.printEmbeddedDict(v, verbosity=verbosity)
+            elif type(v) is tempfile.TemporaryDirectory:
+                self.printValue(k, v.name, end="\n", verbosity=verbosity)
+            else:
+                self.printValue(k, v, end="\n", verbosity=verbosity)
+
+    def showOutput(self):
+        return self.verbosity > 0
+
+    def showError(self):
+        return self.verbosity > 1
+
+    def printError(self, value):
+        if self.verbosity <= 0:
+            print(value, file=sys.stderr)
+
+    def printHeader(self, **kwargs):
+        if self.verbosity < 0:
+            return
+
+        with open("ios_build/logo.txt", "r") as f:
+            logo = f.read()
+
+        self.width = max([len(line) for line in logo.split('\n')])
+        print(logo)
+        print()
+
+    def printFooter(self, **kwargs):
+        if self.verbosity < 0:
+            return
+        
+        n = self.width
+        print("\U0001F5A5 " * n)
+        print("iOSBuild complete")
+        print("Time:\t{}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+        print("\U0001F4BB" * n)
