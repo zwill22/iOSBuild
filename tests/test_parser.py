@@ -1,6 +1,7 @@
+import os
 import pytest
 import json
-
+import tempfile
 from ios_build.parser import parse
 from ios_build.errors import ParserError
 
@@ -12,21 +13,31 @@ def testDefaults():
     result = parse(["example"])
 
     expected_result = {
+        "quiet": False,
         "path": "example",
         "verbose": False,
         "cmake_command": "cmake",
         "clean": False,
         "toolchain": "https://github.com/leetal/ios-cmake/blob/master/ios.toolchain.cmake?raw=true",
-        "working_dir": None,
+        "toolchain_dest": "toolchain",
         "build_prefix": "build",
         "install_prefix": "install",
+        "output_dir": os.getcwd(),
         "clean_up": False,
         "platforms": ["OS64", "SIMULATORARM64", "MAC_ARM64"],
         "cmake_options": {},
-        "dev_print": False,
+        "overwrite": False
     }
 
-    assert result == expected_result
+    assert set(expected_result) == set(result)
+
+    for k, v in result.items():
+        assert k in expected_result
+        if k in ("toolchain_dest", "build_prefix", "install_prefix"):
+            assert os.path.isdir(v.name)
+        else:
+            assert v == expected_result[k]
+
 
 
 def testVerbose():

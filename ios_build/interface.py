@@ -1,3 +1,4 @@
+import sys
 import subprocess
 
 from ios_build.errors import CMakeError, IOSBuildError, XCodeBuildError
@@ -14,11 +15,14 @@ def callSubProcess(command: list, verbose: bool = False):
     Raises:
         RuntimeError: Raised if the process returns a non-zero exit code.
     """
-    stdout = None if verbose else subprocess.DEVNULL
-    stderr = None if verbose else subprocess.DEVNULL
+
+    p = subprocess.run(command, capture_output=not verbose)
+
     try:
-        subprocess.run(command, capture_output=False, check=True, stdout=stdout, stderr=stderr)
+        p.check_returncode()
     except subprocess.CalledProcessError as e:
+        if not verbose:
+            print(p.stderr, file=sys.stderr)
         raise RuntimeError(e)
 
 

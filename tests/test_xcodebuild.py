@@ -12,7 +12,8 @@ def testCheck():
         xcodebuild.checkXCodeBuild(xcode_build_command="fake_xcodebuild_command")
 
 
-def testFramework(tmp_path, capfd):
+@pytest.mark.parametrize("quiet, verbose", [(False, False), (True, False), (False, True)])
+def testFramework(tmp_path, capfd, quiet, verbose):
     files = {}
 
     with pytest.raises(XCodeBuildError):
