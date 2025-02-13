@@ -60,6 +60,6 @@ def testRunner(capfd):
 
 # TODO Fix code so this test always works!!!
 @pytest.mark.slow
-def testRun():
-    args = ["example"]
+def testRun(tmp_path):
+    args = ["example", "--output-dir={}".format(tmp_path)]
     checkRunner(args, 0)

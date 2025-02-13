@@ -76,9 +76,10 @@ def testBuildFn(tmp_path):
         build.build(tmp_path)
 
 
-def checkBuild(build_path, install_path, **kwargs):
+def checkBuild(build_path, install_path, output_path, **kwargs):
     assert os.path.isdir(build_path)
     assert os.path.isdir(install_path)
+    assert os.path.isdir(output_path)
 
     platforms = kwargs.get("platforms")
     for platform in platforms:
@@ -88,7 +89,7 @@ def checkBuild(build_path, install_path, **kwargs):
         assert os.path.isfile(header)
         assert os.path.isfile(lib)
 
-    framework = os.path.join(install_path, "libiosbuildexample.xcframework")
+    framework = os.path.join(output_path, "libiosbuildexample.xcframework")
     assert os.path.isdir(framework)
 
     # Test structure of xcframework
@@ -111,21 +112,21 @@ def testBuild(tmp_path, verbose):
     with pytest.raises(TypeError):
         build.runBuild()
 
-    kwargs = parse(["example", "-w", os.path.abspath(tmp_path)])
+    kwargs = parse(["example", "--output-dir", os.path.abspath(tmp_path)])
     kwargs["verbose"] = verbose
 
-    build_path = os.path.join(tmp_path, kwargs["build_prefix"])
-    install_path = os.path.join(tmp_path, kwargs["install_prefix"])
+    build_path = kwargs["build_prefix"].name
+    install_path = kwargs["install_prefix"].name
 
     kwargs["build_prefix"] = build_path
     kwargs["install_prefix"] = install_path
+    kwargs["output_dir"] = tmp_path
 
     build.runBuild(**kwargs)
 
-    checkBuild(build_path, install_path, **kwargs)
+    checkBuild(build_path, install_path, tmp_path, **kwargs)
 
 
-# TODO Add quick tests for code only covered by slow tests
 @pytest.mark.slow
 @pytest.mark.parametrize("verbose", [True, False])
 def testBuildWithOptions(tmp_path, verbose):
@@ -136,13 +137,14 @@ def testBuildWithOptions(tmp_path, verbose):
     kwargs["cmake_options"] = {"FOO": "ON", "BAR": "OFF"}
 
     kwargs["platform_options"] = {"MAC_ARM64": {"NEW": "OFF"}}
+    kwargs["output_dir"] = tmp_path
 
-    build_path = os.path.join(tmp_path, kwargs["build_prefix"])
-    install_path = os.path.join(tmp_path, kwargs["install_prefix"])
+    build_path = kwargs["build_prefix"].name
+    install_path = kwargs["install_prefix"].name
 
     kwargs["build_prefix"] = build_path
     kwargs["install_prefix"] = install_path
 
     build.runBuild(**kwargs)
 
-    checkBuild(build_path, install_path, **kwargs)
+    checkBuild(build_path, install_path, tmp_path, **kwargs)

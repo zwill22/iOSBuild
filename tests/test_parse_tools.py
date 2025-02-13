@@ -67,7 +67,8 @@ def testLoadJson():
     assert loaded_json == {"key1": "value1", "key2": "value2"}
 
 
-def testSortArgsEmpty():
+@pytest.mark.parametrize('verbose', (True, False))
+def testSortArgsEmpty(verbose):
     namespace = argparse.Namespace()
 
     with pytest.raises(AttributeError):
@@ -82,8 +83,8 @@ def testSortArgsEmpty():
     with pytest.raises(AttributeError):
         parser.sortArgs(namespace)
 
-    namespace.dev_print = False
-    expected_result["dev_print"] = False
+    namespace.verbose = verbose
+    expected_result["verbose"] = verbose
 
     result = parser.sortArgs(namespace)
 
@@ -103,17 +104,18 @@ def testSortArgsConflict():
         parser.sortArgs(namespace)
 
 
-def testSortArgsPlatformJson():
+@pytest.mark.parametrize("verbose", (True, False))
+def testSortArgsPlatformJson(verbose):
     namespace = argparse.Namespace()
 
     namespace.cmake_options = None
     namespace.platform_json = "tests/example.json"
     namespace.platform_options = None
 
-    namespace.dev_print = False
+    namespace.verbose = verbose
 
     expected_result = {
-        "dev_print": False,
+        "verbose": verbose,
         "cmake_options": {},
         "platform_options": {"key1": "value1", "key2": "value2"},
     }
@@ -128,7 +130,8 @@ def testSortArgsPlatformJson():
     assert parser.sortArgs(namespace) == expected_result
 
 
-def testSortArgsPlatformOptions():
+@pytest.mark.parametrize("verbose", (True, False))
+def testSortArgsPlatformOptions(verbose):
     namespace = argparse.Namespace()
 
     namespace.cmake_options = None
@@ -137,10 +140,10 @@ def testSortArgsPlatformOptions():
     options = {"key": "value"}
 
     namespace.platform_options = json.dumps(options)
-    namespace.dev_print = False
+    namespace.verbose = verbose
 
     expected_result = {
-        "dev_print": False,
+        "verbose": verbose,
         "cmake_options": {},
         "platform_options": options,
     }
@@ -150,17 +153,18 @@ def testSortArgsPlatformOptions():
     assert result == expected_result
 
 
-def testSortArgsCMakeOptions():
+@pytest.mark.parametrize("verbose", (True, False))
+def testSortArgsCMakeOptions(verbose):
     namespace = argparse.Namespace()
 
     namespace.cmake_options = ["CHEESE=MELTED", "OPTION=FLAG"]
 
     namespace.platform_json = None
     namespace.platform_options = None
-    namespace.dev_print = False
+    namespace.verbose = verbose
 
     expected_result = {}
-    expected_result["dev_print"] = False
+    expected_result["verbose"] = verbose
     expected_result["cmake_options"] = {"CHEESE": "MELTED", "OPTION": "FLAG"}
 
     result = parser.sortArgs(namespace)

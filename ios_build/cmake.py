@@ -11,6 +11,18 @@ def checkCMake(**kwargs):
     interface.cmake("--version", **kwargs)
 
 
+def checkInput(*args):
+    """
+    Checks args are not None
+
+    Raises:
+        TypeError: Raised if arg is None
+    """
+    for arg in args:
+        if not arg:
+            raise TypeError("expected str instance, NoneType found")
+         
+
 def configure(
     path: str = None,
     platform: str = None,
@@ -45,6 +57,8 @@ def configure(
     platform_specific_options = {}
     if platform in platform_options:
         platform_specific_options = platform_options[platform]
+
+    checkInput(path, platform, toolchain_path, install_dir, platform_dir)
 
     if verbose:
         printer.printValue("Platform:", platform, end="\n")

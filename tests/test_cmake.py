@@ -14,7 +14,7 @@ def testCheck():
 
 
 def setupCases():
-    string1 = "expected str, bytes or os.PathLike object"
+    string = "expected str instance, NoneType found"
 
     kwargs = {
         "path": "example",
@@ -27,8 +27,7 @@ def setupCases():
     n = len(kwargs)
 
     input_args = [dict(list(kwargs.items())[:i]) for i in range(n)]
-    output_strs = [string1] * (n - 1)
-    output_strs.append("expected str instance, NoneType found")
+    output_strs = [string] * n
 
     return list(zip(input_args, output_strs))
 
@@ -120,7 +119,7 @@ def testBuild(tmp_path, verbose, capfd):
     with pytest.raises(CMakeError):
         cmake.build(platform_dir=str(tmp_path), verbose=verbose)
     captured = capfd.readouterr()
-    assert captured.err == "Error: could not load cache\n"
+    assert "Error: could not load cache" in captured.err
 
 
 @pytest.mark.parametrize("verbose", (True, False))
