@@ -5,6 +5,7 @@ from ios_build import search
 from ios_build.printer import Printer
 
 
+# TODO Move to separate file
 def createEmptyFile(*path) -> str:
     filepath = os.path.join(*path)
 
@@ -95,7 +96,7 @@ def testFindLibraries(tmp_path, print_level):
     expected_output = {}
     for platform in platforms:
         expected_output[platform] = createEmptyFile(tmp_path, platform, "libexample.a")
-        
+
     assert search.findlibraries(tmp_path, platforms=platforms, printer=printer) == {
         "libexample": expected_output
     }
