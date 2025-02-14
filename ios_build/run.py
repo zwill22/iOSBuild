@@ -1,7 +1,7 @@
+import sys
+
 from ios_build.parser import parse
 from ios_build.build import runBuild
-
-from sys import platform, stderr
 
 from ios_build.errors import IOSBuildError, CMakeError, XCodeBuildError, ParserError
 
@@ -16,14 +16,14 @@ def runner(args=None):
     Returns:
         int: exit code
     """
-    if platform != "darwin":
-        print("! Invalid OS, iOSBuild only runs on macOS", file=stderr)
-        return 2
+    if sys.platform != "darwin":
+        print("! Invalid OS, iOSBuild only runs on macOS", file=sys.stderr)
+        return 4
     
     try:
         kwargs = parse(args=args)
     except IOSBuildError as error:
-        print("Invalid input: {}".format(error), file=stderr)
+        print("Invalid input: {}".format(error), file=sys.stderr)
         return 1
     except ParserError:
         return 2
@@ -31,16 +31,16 @@ def runner(args=None):
     try:
         runBuild(**kwargs)
     except IOSBuildError as error:
-        print("Error: {}".format(error), file=stderr)
+        print("Error: {}".format(error), file=sys.stderr)
         return 1
     except CMakeError as error:
-        print("CMake Error", file=stderr)
-        print("Message: {}".format(error), file=stderr)
+        print("CMake Error", file=sys.stderr)
+        print("Message: {}".format(error), file=sys.stderr)
         return 2
     except XCodeBuildError as error:
-        print("! XCodeBuild error", file=stderr)
-        print("! Message: {}".format(error), file=stderr)  
-        return 2
+        print("! XCodeBuild error", file=sys.stderr)
+        print("! Message: {}".format(error), file=sys.stderr)  
+        return 3
 
     return 0
 

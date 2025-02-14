@@ -2,64 +2,34 @@ import pytest
 from ios_build.run import runner
 
 
-def checkRunner(args, exit_code, capfd=None, err=None, out=None):
-    assert runner(args=args) == exit_code
-    if capfd:
-        captured = capfd.readouterr()
-        if err:
-            assert err in captured.err
-        if out:
-            assert out in captured.out
-
-
-def testRunner(capfd):
-    # Environment dependent error
+def testRunnerNoArgs(capsys):
+    assert runner() == 2
+    captured = capsys.readouterr()
     try:
-        checkRunner(None, 2, capfd, err="iOSBuild: error: unrecognized arguments:")
+        assert "iOSBuild: error: the following arguments are required: path" in captured.err
     except AssertionError:
-        checkRunner(
-            None,
-            2,
-            capfd,
-            err="iOSBuild: error: the following arguments are required: path",
-        )
-
-    args = []
-    checkRunner(
-        args,
-        2,
-        capfd,
-        err="iOSBuild: error: the following arguments are required: path",
-    )
-
-    args.append("example")
-    args.append("-D")
-    checkRunner(
-        args, 2, capfd, err="iOSBuild: error: argument -D: expected one argument"
-    )
-
-    args[1] = "-DPLATFORM=IOS"
-    checkRunner(
-        args,
-        1,
-        capfd,
-        err="Invalid input: CMake option PLATFORM is used by iOSBuild and cannot be specified",
-    )
-
-    args[1] = "-DOPTION=VALUE"
-    args.append("-DOPTION=VALUE")
-    checkRunner(args, 1, capfd, err="Invalid input: Option OPTION already specified")
-
-    args[1] = "--cmake"
-    args[2] = "notcmake"
-    checkRunner(args, 1, capfd, err="Error: CMake not found")
-
-    # TODO Simulate a CMake error
-    # TODO Simulate an xcodebuilderror
+        assert "iOSBuild: error: unrecognized arguments: " in captured.err
 
 
-# TODO Fix code so this test always works!!!
+test_cases = [
+    ([], 2, "iOSBuild: error: the following arguments are required: path"),
+    (["example", "-D"], 2, "iOSBuild: error: argument -D: expected one argument"),
+    (["example", "-DPLATFORM=IOS"], 1, "Invalid input: CMake option PLATFORM is used by iOSBuild and cannot be specified"),
+    (["example", "-DOPTION=VALUE", "-DOPTION=VALUE"], 1, "Invalid input: Option OPTION already specified"),
+    (["example", "--cmake", "notcmake"], 1, "Error: CMake not found"),
+    (["example", "--cmake", "xcodebuild"], 2, "xcodebuild: error: invalid option")
+]
+
+# TODO Simulate an XCodeError
+@pytest.mark.parametrize("args, exit_code, error", test_cases)
+def testRunner(capsys, args, exit_code, error):
+    code = runner(args=args)
+    assert code == exit_code
+    captured = capsys.readouterr()
+    err_out = captured.err
+    assert error in err_out
+    
 @pytest.mark.slow
 def testRun(tmp_path):
     args = ["example", "--output-dir={}".format(tmp_path)]
-    checkRunner(args, 0)
+    assert runner(args=args) == 0

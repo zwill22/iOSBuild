@@ -8,12 +8,12 @@ from ios_build.errors import ParserError
 
 def testDefaults(capsys):
     with pytest.raises(ParserError):
-        parse()
+        parse(args=[])
 
     capture = capsys.readouterr()
     assert "iOSBuild: error: the following arguments are required: path" in capture.err
 
-    result = parse(["example"])
+    result = parse(args=["example"])
 
     expected_result = {
         "path": "example",
@@ -46,7 +46,7 @@ def testDefaults(capsys):
     [([], 0), (["-q"], -1), (["-v"], 1), (["-vv"], 2), (["-v", "-v"], 2)],
 )
 def testVerbosity(options, print_level):
-    result = parse(["example", *options])
+    result = parse(args=["example", *options])
 
     assert result["print_level"] == print_level
 
@@ -54,7 +54,7 @@ def testVerbosity(options, print_level):
 @pytest.mark.parametrize("options", [["-q", "-v"], ["-q", "-vv"], ["-q", "-v", "-v"]])
 def testVerbosityFail(capsys, options):
     with pytest.raises(ParserError):
-        parse(["example", *options])
+        parse(args=["example", *options])
     capture = capsys.readouterr()
     assert (
         "iOSBuild: error: argument -v/--verbose: not allowed with argument --quiet/-q"
@@ -64,23 +64,23 @@ def testVerbosityFail(capsys, options):
 
 def testPlatforms(capsys):
     with pytest.raises(ParserError):
-        parse(["example", "--platforms"])
+        parse(args=["example", "--platforms"])
     capture = capsys.readouterr()
     assert (
         "iOSBuild: error: argument --platforms: expected at least one argument"
         in capture.err
     )
 
-    result1 = parse(["example", "--platforms", "OS"])
+    result1 = parse(args=["example", "--platforms", "OS"])
 
     assert result1["platforms"] == ["OS"]
 
-    result2 = parse(["example", "--platforms", "OS", "WATCHOS"])
+    result2 = parse(args=["example", "--platforms", "OS", "WATCHOS"])
 
     assert result2["platforms"] == ["OS", "WATCHOS"]
 
     with pytest.raises(ParserError):
-        parse(["example", "--platforms", "WINDOWS"])
+        parse(args=["example", "--platforms", "WINDOWS"])
     capture = capsys.readouterr()
     assert (
         "iOSBuild: error: argument --platforms: invalid choice: 'WINDOWS'"
@@ -90,7 +90,7 @@ def testPlatforms(capsys):
 
 def testCMakeOptions(capsys):
     with pytest.raises(ParserError):
-        parse(["example", "-D"])
+        parse(args=["example", "-D"])
     capture = capsys.readouterr()
     assert "iOSBuild: error: argument -D: expected one argument" in capture.err
 
@@ -101,7 +101,7 @@ def testCMakeOptions(capsys):
     expected_result = dict(zip(keys, values))
 
     with pytest.raises(ParserError):
-        parse(["example", "-D", *arguments])
+        parse(args=["example", "-D", *arguments])
     capture = capsys.readouterr()
     assert (
         "iOSBuild: error: unrecognized arguments: AnotherArg=AnotherValue third_arg=a_third_value"
@@ -111,7 +111,7 @@ def testCMakeOptions(capsys):
     command = [
         item for pair in zip(["-D"] * len(arguments), arguments) for item in pair
     ]
-    result = parse(["example", *command])
+    result = parse(args=["example", *command])
     cmake_options = result["cmake_options"]
     assert cmake_options == expected_result
 
@@ -124,16 +124,16 @@ def testJSON(capsys):
     platform_options = ["--platform-options", json.dumps(example_dict)]
 
     with pytest.raises(ParserError):
-        parse(["example", *platform_json, *platform_options])
+        parse(args=["example", *platform_json, *platform_options])
     capture = capsys.readouterr()
     assert (
         "iOSBuild: error: argument --platform-options: not allowed with argument --platform-json"
         in capture.err
     )
 
-    result1 = parse(["example", *platform_json])
+    result1 = parse(args=["example", *platform_json])
 
     assert result1["platform_options"] == {"key1": "value1", "key2": "value2"}
 
-    result2 = parse(["example", *platform_options])
+    result2 = parse(args=["example", *platform_options])
     assert result2["platform_options"] == example_dict
