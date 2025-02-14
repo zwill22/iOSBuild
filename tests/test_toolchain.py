@@ -2,6 +2,7 @@ import os
 import pytest
 
 from ios_build.errors import IOSBuildError
+from ios_build.printer import Printer
 from ios_build.toolchain import getToolchain, download
 
 
@@ -18,15 +19,16 @@ def testDownload(tmp_path):
         download(fake_url, output2)    
 
 
-@pytest.mark.parametrize("verbose", [True, False])
-def testGetToolchain(verbose, toolchain_file):
+@pytest.mark.parametrize("print_level", range(-1, 3))
+def testGetToolchain(print_level, toolchain_file):
+    printer = Printer(print_level=print_level)
     with pytest.raises(ValueError):
-        getToolchain(verbose=verbose)
+        getToolchain(printer=printer)
 
-    file = getToolchain(verbose=verbose, toolchain=toolchain_file)
+    file = getToolchain(printer=printer, toolchain=toolchain_file)
 
     assert os.path.isfile(file)
 
     with pytest.raises(IOSBuildError):
         fake_file = os.path.join(file, "something")
-        getToolchain(verbose=verbose, toolchain=fake_file)
+        getToolchain(printer=printer, toolchain=fake_file)

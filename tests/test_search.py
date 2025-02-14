@@ -2,6 +2,7 @@ import os
 import pytest
 
 from ios_build import search
+from ios_build.printer import Printer
 
 
 def createEmptyFile(*path) -> str:
@@ -79,35 +80,36 @@ def testInvertDict():
     assert search.invertDict(input_dict) == expected_output
 
 
-@pytest.mark.parametrize("verbose", (True, False))
-def testFindLibraries(tmp_path, verbose):
-    assert search.findlibraries(tmp_path, verbose=verbose) == {}
+@pytest.mark.parametrize("print_level", range(-1, 3))
+def testFindLibraries(tmp_path, print_level):
+    printer = Printer(print_level=print_level)
+    assert search.findlibraries(tmp_path, printer=printer) == {}
 
     platforms = ["mac", "linux", "windows"]
     with pytest.raises(AssertionError, match="Directory does not exist"):
-        search.findlibraries(tmp_path, platforms=platforms, verbose=verbose)
+        search.findlibraries(tmp_path, platforms=platforms, printer=printer)
     for platform in platforms:
         os.makedirs(os.path.join(tmp_path, platform))
-    assert search.findlibraries(tmp_path, platforms=platforms, verbose=verbose) == {}
+    assert search.findlibraries(tmp_path, platforms=platforms, printer=printer) == {}
 
     expected_output = {}
     for platform in platforms:
         expected_output[platform] = createEmptyFile(tmp_path, platform, "libexample.a")
         
-    assert search.findlibraries(tmp_path, platforms=platforms, verbose=verbose) == {
+    assert search.findlibraries(tmp_path, platforms=platforms, printer=printer) == {
         "libexample": expected_output
     }
 
     platforms.append("bsd")
     os.makedirs(os.path.join(tmp_path, "bsd"))
 
-    assert search.findlibraries(tmp_path, platforms=platforms, verbose=verbose) == {
+    assert search.findlibraries(tmp_path, platforms=platforms, printer=printer) == {
         "libexample": expected_output
     }
 
     lib2_path = createEmptyFile(tmp_path, "bsd", "lib2.a")
 
-    assert search.findlibraries(tmp_path, platforms=platforms, verbose=verbose) == {
+    assert search.findlibraries(tmp_path, platforms=platforms, printer=printer) == {
         "libexample": expected_output,
         "lib2": {"bsd": lib2_path},
     }

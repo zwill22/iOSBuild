@@ -2,32 +2,35 @@ import pytest
 import os
 
 from ios_build import build
+from ios_build.printer import Printer
 from ios_build.parser import parse
 from ios_build.errors import IOSBuildError
 
 
-@pytest.mark.parametrize("verbose", [True, False])
-def testCheckPath(verbose):
+@pytest.mark.parametrize("print_level", range(-1, 3))
+def testCheckPath(print_level):
     """
     Check path contains a CMakeLists.txt file
     """
+    printer = Printer(print_level=print_level)
 
     # Non-existant directory
     with pytest.raises(IOSBuildError, match="No such directory: fakeDir"):
-        build.checkPath("fakeDir", verbose=verbose)
+        build.checkPath("fakeDir", printer=printer)
 
     # Does contain CMakeLists.txt
-    build.checkPath("example", verbose=verbose)
+    build.checkPath("example", printer=printer)
 
     # Doesn't
     with pytest.raises(IOSBuildError, match="no such file"):
-        build.checkPath("tests", verbose=verbose)
+        build.checkPath("tests", printer=printer)
 
 
-@pytest.mark.parametrize("verbose", [True, False])
+@pytest.mark.parametrize("print_level", range(-1, 3))
 @pytest.mark.parametrize("clean", [True, False])
-def testSetupDirectory(tmp_path, verbose, clean):
-    directory = build.setupDirectory(tmp_path, verbose=verbose, clean=clean)
+def testSetupDirectory(tmp_path, print_level, clean):
+    printer = Printer(print_level=print_level)
+    directory = build.setupDirectory(tmp_path, printer=printer, clean=clean)
 
     assert directory == os.path.abspath(tmp_path)
     assert os.path.isdir(directory)
@@ -35,7 +38,7 @@ def testSetupDirectory(tmp_path, verbose, clean):
     sub_dir = "new_directory"
 
     directory2 = build.setupDirectory(
-        sub_dir, verbose=verbose, clean=clean, prefix=tmp_path
+        sub_dir, printer=printer, clean=clean, prefix=tmp_path
     )
 
     assert directory2 == os.path.join(tmp_path, sub_dir)
@@ -107,13 +110,13 @@ def checkBuild(build_path, install_path, output_path, **kwargs):
 
 
 @pytest.mark.slow
-@pytest.mark.parametrize("verbose", [True, False])
-def testBuild(tmp_path, verbose):
+@pytest.mark.parametrize("print_level", range(-1, 3))
+def testBuild(tmp_path, print_level):
     with pytest.raises(TypeError):
         build.runBuild()
 
     kwargs = parse(["example", "--output-dir", os.path.abspath(tmp_path)])
-    kwargs["verbose"] = verbose
+    kwargs["print_level"] = print_level
 
     build_path = kwargs["build_prefix"].name
     install_path = kwargs["install_prefix"].name
@@ -128,11 +131,11 @@ def testBuild(tmp_path, verbose):
 
 
 @pytest.mark.slow
-@pytest.mark.parametrize("verbose", [True, False])
-def testBuildWithOptions(tmp_path, verbose):
+@pytest.mark.parametrize("print_level", range(-1, 3))
+def testBuildWithOptions(tmp_path, print_level):
     kwargs = parse(["example"])
 
-    kwargs["verbose"] = verbose
+    kwargs["print_level"] = print_level
 
     kwargs["cmake_options"] = {"FOO": "ON", "BAR": "OFF"}
 

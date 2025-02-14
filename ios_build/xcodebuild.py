@@ -1,6 +1,7 @@
 import os
 
 from ios_build import interface
+from ios_build.printer import getPrinter
 from ios_build.errors import IOSBuildError
 
 
@@ -8,7 +9,10 @@ def checkXCodeBuild(**kwargs):
     """
     Check availability of `xcodebuild` command using `xcodebuild -version`.
     """
+    printer = getPrinter(**kwargs)
+    printer.print("Checking XCodeBuild...", verbosity=1)
     interface.xcodebuild("-version", **kwargs)
+    printer.printStat("XCodeBuild found")
 
 
 def createXCFramework(

@@ -1,21 +1,23 @@
 import os
 import pytest
 import json
-import tempfile
+
 from ios_build.parser import parse
 from ios_build.errors import ParserError
 
 
-def testDefaults():
+def testDefaults(capsys):
     with pytest.raises(ParserError):
         parse()
+
+    capture = capsys.readouterr()
+    assert "iOSBuild: error: the following arguments are required: path" in capture.err
 
     result = parse(["example"])
 
     expected_result = {
-        "quiet": False,
         "path": "example",
-        "verbose": False,
+        "print_level": 0,
         "cmake_command": "cmake",
         "clean": False,
         "toolchain": "https://github.com/leetal/ios-cmake/blob/master/ios.toolchain.cmake?raw=true",
@@ -26,7 +28,7 @@ def testDefaults():
         "clean_up": False,
         "platforms": ["OS64", "SIMULATORARM64", "MAC_ARM64"],
         "cmake_options": {},
-        "overwrite": False
+        "overwrite": False,
     }
 
     assert set(expected_result) == set(result)
@@ -39,20 +41,35 @@ def testDefaults():
             assert v == expected_result[k]
 
 
+@pytest.mark.parametrize(
+    "options, print_level",
+    [([], 0), (["-q"], -1), (["-v"], 1), (["-vv"], 2), (["-v", "-v"], 2)],
+)
+def testVerbosity(options, print_level):
+    result = parse(["example", *options])
 
-def testVerbose():
-    result = parse(["exmaple"])
-
-    assert result["verbose"] is False
-
-    result = parse(["example", "-v"])
-
-    assert result["verbose"] is True
+    assert result["print_level"] == print_level
 
 
-def testPlatforms():
+@pytest.mark.parametrize("options", [["-q", "-v"], ["-q", "-vv"], ["-q", "-v", "-v"]])
+def testVerbosityFail(capsys, options):
+    with pytest.raises(ParserError):
+        parse(["example", *options])
+    capture = capsys.readouterr()
+    assert (
+        "iOSBuild: error: argument -v/--verbose: not allowed with argument --quiet/-q"
+        in capture.err
+    )
+
+
+def testPlatforms(capsys):
     with pytest.raises(ParserError):
         parse(["example", "--platforms"])
+    capture = capsys.readouterr()
+    assert (
+        "iOSBuild: error: argument --platforms: expected at least one argument"
+        in capture.err
+    )
 
     result1 = parse(["example", "--platforms", "OS"])
 
@@ -64,14 +81,18 @@ def testPlatforms():
 
     with pytest.raises(ParserError):
         parse(["example", "--platforms", "WINDOWS"])
+    capture = capsys.readouterr()
+    assert (
+        "iOSBuild: error: argument --platforms: invalid choice: 'WINDOWS'"
+        in capture.err
+    )
 
-    with pytest.raises(ParserError):
-        parse(["example", "--platforms"])
 
-
-def testCMakeOptions():
+def testCMakeOptions(capsys):
     with pytest.raises(ParserError):
         parse(["example", "-D"])
+    capture = capsys.readouterr()
+    assert "iOSBuild: error: argument -D: expected one argument" in capture.err
 
     keys = ["ARG1", "AnotherArg", "third_arg"]
     values = ["VALUE1", "AnotherValue", "a_third_value"]
@@ -81,6 +102,11 @@ def testCMakeOptions():
 
     with pytest.raises(ParserError):
         parse(["example", "-D", *arguments])
+    capture = capsys.readouterr()
+    assert (
+        "iOSBuild: error: unrecognized arguments: AnotherArg=AnotherValue third_arg=a_third_value"
+        in capture.err
+    )
 
     command = [
         item for pair in zip(["-D"] * len(arguments), arguments) for item in pair
@@ -90,7 +116,7 @@ def testCMakeOptions():
     assert cmake_options == expected_result
 
 
-def testJSON():
+def testJSON(capsys):
     filepath = "tests/example.json"
     example_dict = {"k": "v"}
 
@@ -99,6 +125,11 @@ def testJSON():
 
     with pytest.raises(ParserError):
         parse(["example", *platform_json, *platform_options])
+    capture = capsys.readouterr()
+    assert (
+        "iOSBuild: error: argument --platform-options: not allowed with argument --platform-json"
+        in capture.err
+    )
 
     result1 = parse(["example", *platform_json])
 
