@@ -20,7 +20,7 @@ class Printer:
             PrinterError: Raised if both quiet and verbose specified simultaneously
         """
         self.verbosity = print_level
-        self.width = 120
+        self.width = 34
 
     def print(self, value, verbosity=0, **kwargs):
         if self.verbosity >= verbosity:
@@ -63,6 +63,8 @@ class Printer:
             self.tick(**kwargs)
         elif tick == "cross":
             self.cross(**kwargs)
+        else:
+            self.print("", **kwargs)
 
     def printEmbeddedDict(
         self, input_dict: dict, verbosity: int = 0, header: str = None
@@ -105,19 +107,23 @@ class Printer:
         with open("ios_build/logo.txt", "r") as f:
             logo = f.read()
 
-        self.width = max([len(line) for line in logo.split("\n")])
+        n = max([len(line) for line in logo.split("\n")])
+        assert n == self.width
         print(logo)
         print()
 
-    def printFooter(self, **kwargs):
+    def printFooter(self, **kwargs) -> str:
         if self.verbosity < 0:
             return
 
         n = self.width
+        time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         print("\U0001f5a5 " * n)
         print("iOSBuild complete")
-        print("Time:\t{}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+        print("Time:\t{}".format(time))
         print("\U0001f4bb" * n)
+
+        return time
 
 
 def getPrinter(**kwargs) -> Printer:
