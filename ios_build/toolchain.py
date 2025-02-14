@@ -4,7 +4,7 @@ import tempfile
 
 from urllib.parse import urlparse
 
-from ios_build.printer import Printer
+from ios_build.printer import getPrinter
 from ios_build.errors import IOSBuildError
 
 
@@ -49,8 +49,7 @@ def download(url: str, output_file: str):
         f.write(r.content)
 
 
-def getToolchain(printer: Printer = Printer(), toolchain: str = None, **kwargs
-) -> str:
+def getToolchain(toolchain: str = None, **kwargs) -> str:
     """
     Retrieve the toolchain file for building CMake projects for Apple
     operating systems. The default version is specified in the parser.
@@ -70,6 +69,7 @@ def getToolchain(printer: Printer = Printer(), toolchain: str = None, **kwargs
         raise ValueError("Toolchain file not found")
     
     output = ""
+    printer = getPrinter(**kwargs)
 
     printer.printValue("Acquiring toolchain file", toolchain, verbosity=1)
     
@@ -83,11 +83,11 @@ def getToolchain(printer: Printer = Printer(), toolchain: str = None, **kwargs
     elif os.path.isfile(toolchain):
         output = toolchain
     else:
+        printer.printStat("Toolchain not found", tick="cross")
         raise IOSBuildError("Unable to find toolchain: {}".format(toolchain))
     
-    printer.tick(verbosity=1)
+    printer.printStat("Toolchain found")
     printer.printValue("Toolchain file", output, verbosity=1)
-    printer.tick(verbosity=1)
 
     return output
     

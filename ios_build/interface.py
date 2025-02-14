@@ -1,6 +1,6 @@
 import subprocess
 
-from ios_build.printer import Printer
+from ios_build.printer import Printer, getPrinter
 from ios_build.errors import CMakeError, IOSBuildError, XCodeBuildError
 
 
@@ -27,7 +27,7 @@ def callSubProcess(command: list, printer: Printer):
         raise RuntimeError(e)
 
 
-def cmake(*args, cmake_command: str = "cmake", printer: Printer = Printer(), **kwargs):
+def cmake(*args, cmake_command: str = "cmake", **kwargs):
     """
     Runs `cmake` using subprocess.
 
@@ -35,6 +35,7 @@ def cmake(*args, cmake_command: str = "cmake", printer: Printer = Printer(), **k
         cmake_command (str, optional): Custom CMake command. Defaults to "cmake".
         verbose (bool): Toggle additional output
     """
+    printer = getPrinter(**kwargs)
     command = [cmake_command, *args]
     printer.print(" ".join(command), verbosity=2)
     try:
@@ -46,14 +47,14 @@ def cmake(*args, cmake_command: str = "cmake", printer: Printer = Printer(), **k
 
 
 # TODO No error thrown when xcframwork already exists
-def xcodebuild(*args, xcode_build_command: str = "xcodebuild", printer: Printer = Printer(), **kwargs):
+def xcodebuild(*args, xcode_build_command: str = "xcodebuild", **kwargs):
     """
     Runs `xcodebuild` using subprocess.
 
     Args:
         xcode_build_command (str, optional): Custom xcodebuild command. Defaults to "xcodebuild".
-        printer (Printer): Printer class
     """
+    printer = getPrinter(**kwargs)
     command = [xcode_build_command, *args]
     printer.print(" ".join(command), verbosity=2)
     try:

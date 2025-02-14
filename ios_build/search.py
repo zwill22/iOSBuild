@@ -1,6 +1,6 @@
 import os
 
-from ios_build import printer
+from ios_build.printer import getPrinter
 
 
 def findPlatformLibraries(directory: str) -> dict[str, str]:
@@ -47,9 +47,7 @@ def invertDict(libraries: dict) -> dict[str, dict[str, str]]:
     return result
 
 
-def findlibraries(
-    install_dir: str, platforms: list[str] = [], verbose: bool = False, **kwargs
-) -> dict[str, dict[str, str]]:
+def findlibraries(install_dir: str, platforms: list[str] = [], **kwargs) -> dict[str, dict[str, str]]:
     """
     Find static libraries for each platform in a directory. Assuming files for each platform
     are contained in a subdirectory of the same name.
@@ -57,7 +55,6 @@ def findlibraries(
     Args:
         install_dir (str): Parent directory where libraries should be installed
         platforms (list[str], optional): List of platforms corresponding to subdirectories in the `install_dir` folder. Defaults to [].
-        verbose (bool, optional): Toggle additional output. Defaults to False.
 
     Returns:
         dict[str, dict[str, str]]: _description_
@@ -72,8 +69,7 @@ def findlibraries(
 
     result = invertDict(libraries)
 
-    if verbose:
-        print("Libraries:")
-        printer.printEmbeddedDict(result)
+    printer = getPrinter(**kwargs)
+    printer.printEmbeddedDict(result, verbosity=1, header="Libraries")
 
     return result

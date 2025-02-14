@@ -1,6 +1,6 @@
 import os
 
-from ios_build.printer import Printer
+from ios_build.printer import getPrinter
 from ios_build import interface
 
 
@@ -8,7 +8,10 @@ def checkCMake(**kwargs):
     """
     Check the existence of cmake by calling the interface with the `--version` option.
     """
+    printer = getPrinter(**kwargs)
+    printer.print("Checking CMake...", verbosity=1)
     interface.cmake("--version", **kwargs)
+    printer.printStat("CMake Found")
 
 
 def checkInput(*args):
@@ -52,7 +55,7 @@ def configure(
         cmake_options (dict, optional): CMake cache options. Defaults to {}.
         generator (str, optional): CMake generator. Defaults to "Xcode".
     """
-    printer = kwargs.get("printer", Printer())
+    printer = getPrinter(**kwargs)
 
     platform_specific_options = {}
     if platform in platform_options:
@@ -81,8 +84,7 @@ def configure(
         platform_dir,
     ]
     interface.cmake(*global_options, *specific_options, *local_options, path, **kwargs)
-    printer.print("CMake configuration complete", end="\t")
-    printer.tick()
+    printer.printStat("CMake configuration complete")
 
 
 def build(platform_dir: str = None, config: str = "Release", **kwargs):
@@ -94,13 +96,12 @@ def build(platform_dir: str = None, config: str = "Release", **kwargs):
         platform_dir (str, optional): Directory containing CMake configuration (CMakeCache.txt). Defaults to None.
         config (str, optional): CMake configuration to build. Defaults to "Release".
     """
-    printer = kwargs.get("printer", Printer())
+    printer = getPrinter(**kwargs)
 
     printer.print("Running CMake Build...\n", verbosity=1)
 
     interface.cmake("--build", platform_dir, "--config", config, **kwargs)
-    printer.print("CMake Build complete\t", end="\t")
-    printer.tick()
+    printer.printStat("CMake Build complete")
 
 
 def install(platform_dir: str = None, config: str = "Release", **kwargs):
@@ -113,11 +114,10 @@ def install(platform_dir: str = None, config: str = "Release", **kwargs):
         platform_dir (str, optional): CMake build directory containing `CMakeCache.txt`. Defaults to None.
         config (str, optional): CMake configuration. Defaults to "Release".
     """
-    printer = kwargs.get("printer", Printer())
+    printer = getPrinter(**kwargs)
     printer.print("Commencing install...", verbosity=1)
     interface.cmake("--install", platform_dir, "--config", config, **kwargs)
-    printer.print("CMake installation complete", end="\t")
-    printer.tick()
+    printer.printStat("CMake installation complete")
 
 
 def runCMake(**kwargs):

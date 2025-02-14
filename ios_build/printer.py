@@ -26,19 +26,18 @@ class Printer:
         if self.verbosity >= verbosity:
             print(value, **kwargs)
 
-    def printValue(self, text, value, verbosity=0, end="\t", **kwargs):
+    def printValue(self, text, value, verbosity=0, **kwargs):
         """
         Print a value inline with a fixed width for key.
         Args:
             text (str): Key for printed value
             value (str): value to be printed
             verbosity (int): The level of verbosity at which the statement should be printed. Defaults to 0.
-            end (str, optional): End character for `print`. Defaults to "\t".
         """
         if self.verbosity >= verbosity:
-            print("{0:<32} {1}".format(text, value), end=end, **kwargs)
+            print("{0:<32} {1}".format(text, value), **kwargs)
 
-    def tick(self, verbosity=0):
+    def tick(self, verbosity=0, **kwargs):
         """
         Print a \U00002705 character
 
@@ -46,9 +45,9 @@ class Printer:
             verbosity (int): The level of verbosity at which the statement should be printed. Defaults to 0.
         """
         if self.verbosity >= verbosity:
-            print("\U00002705")
+            print("\U00002705", **kwargs)
 
-    def cross(self, verbosity=0):
+    def cross(self, verbosity=0, **kwargs):
         """
         Print a \U0000274c character
 
@@ -56,7 +55,14 @@ class Printer:
             verbosity (int): The level of verbosity at which the statement should be printed. Defaults to 0.
         """
         if self.verbosity >= verbosity:
-            print("\U0000274c")
+            print("\U0000274c", **kwargs)
+
+    def printStat(self, text, tick="tick", **kwargs):
+        self.printValue(text, "", end="\t", **kwargs)
+        if tick == "tick":
+            self.tick(**kwargs)
+        elif tick == "cross":
+            self.cross(**kwargs)
 
     def printEmbeddedDict(
         self, input_dict: dict, verbosity: int = 0, header: str = None
@@ -100,16 +106,20 @@ class Printer:
         with open("ios_build/logo.txt", "r") as f:
             logo = f.read()
 
-        self.width = max([len(line) for line in logo.split('\n')])
+        self.width = max([len(line) for line in logo.split("\n")])
         print(logo)
         print()
 
     def printFooter(self, **kwargs):
         if self.verbosity < 0:
             return
-        
+
         n = self.width
-        print("\U0001F5A5 " * n)
+        print("\U0001f5a5 " * n)
         print("iOSBuild complete")
         print("Time:\t{}".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
-        print("\U0001F4BB" * n)
+        print("\U0001f4bb" * n)
+
+
+def getPrinter(**kwargs) -> Printer:
+    return kwargs.get("printer", Printer())

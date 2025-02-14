@@ -5,7 +5,7 @@ from ios_build import cmake
 from ios_build import search
 from ios_build import xcodebuild
 from ios_build.toolchain import getToolchain
-from ios_build.printer import Printer
+from ios_build.printer import Printer, getPrinter
 from ios_build.errors import IOSBuildError
 
 # TODO Let a URL be a valid path
@@ -27,24 +27,26 @@ def checkPath(path: str, **kwargs):
     if not os.path.isdir(path):
         raise IOSBuildError("No such directory: {}".format(path))
     
-    printer = kwargs.get("printer", Printer())
+    printer = getPrinter(**kwargs)
 
-    printer.print("Running iOS Build...", verbosity=1)
-    printer.printValue("Searching for CMakeLists.txt in", path, verbosity=1)
+    printer.print("Setting up directories...", verbosity=1)
 
     cmake_file = "CMakeLists.txt"
     cmake_path = os.path.join(path, cmake_file)
-    if os.path.isfile(cmake_path):
-        printer.tick(verbosity=1)
+    full_path = os.path.abspath(cmake_path)
+    if os.path.isfile(full_path):
+        printer.printStat("CMakeLists.txt found")
+        printer.printValue("CMakeLists.txt path", full_path, verbosity=1)
     else:
-        printer.cross(verbosity=1)
-        raise IOSBuildError("Invalid CMake project provided, no such file:\t{}".format(cmake_path))
+        printer.printStat("Cannot find CMakeLists.txt", tick="cross")
+        raise IOSBuildError("Invalid CMake project provided, no such file:\t{}".format(full_path))
 
 
 def setupDirectory(
     dir_prefix,
     clean: bool = False,
     prefix: str = None,
+    name: str = "Directory",
     **kwargs,
 ) -> str:
     """
@@ -76,9 +78,8 @@ def setupDirectory(
     else:
         os.makedirs(new_dir)
 
-    printer = kwargs.get("printer", Printer())
-    printer.printValue("Setup directory", new_dir, verbosity=1)
-    printer.tick(verbosity=1)
+    printer = getPrinter(**kwargs)
+    printer.printValue(name, new_dir, verbosity=1)
 
     return new_dir
 
@@ -95,7 +96,7 @@ def createFrameworks(install_dir: str, output_dir: str = None, **kwargs):
     if not output_dir:
         raise ValueError("No output directory specified")
     
-    printer = kwargs.get("printer", Printer())
+    printer = getPrinter(**kwargs)
     
     printer.print("Creating XCFrameworks...", verbosity=1)
     libraries = search.findlibraries(install_dir, **kwargs)
@@ -112,17 +113,17 @@ def createFrameworks(install_dir: str, output_dir: str = None, **kwargs):
 
 # TODO Install xcframework to new dir so install may be safely deleted
 # Issue URL: https://github.com/zwill22/iOSBuild/issues/1
-def cleanUp(build_dir: str, install_dir: str, clean_up: bool = False, printer: Printer = Printer(), **kwargs):
+def cleanUp(build_dir: str, install_dir: str, clean_up: bool = False, **kwargs):
     """
     Function to clean up files after the program is run.
 
     Args:
         build_dir (str): Parent directory of all build files
         install_dir (str): Parent directory of installations.
-        printer (Printer): Printer manager
         clean_up (bool, optional): Whether to remove the above directories. Defaults to False.
     """
-    printer.print("Cleaning Up", end="\t\t\t")
+    printer = getPrinter(**kwargs)
+    printer.printStat("Cleaning Up", tick=False)
     if clean_up:
         shutil.rmtree(build_dir)
         shutil.rmtree(install_dir)  # TODO Remove install_dir?
@@ -136,19 +137,19 @@ def build(build_dir: str, platforms: list[str] = None, **kwargs):
 
     Args:
         build_dir (str): Parent directory for all build files
-        platforms (list[str], optional): _description_. Defaults to None.
+        platforms (list[str], optional): List of platforms to build. Defaults to None.
 
     Raises:
         RuntimeError: _description_
     """
-    printer = kwargs.get("printer", Printer())
+    printer = getPrinter(**kwargs)
 
     if not platforms:
         raise RuntimeError("No platforms specified")
     for platform in platforms:
-        printer.print("Platform:\t{}".format(platform))
+        printer.printValue("Platform", platform, end='\n')
 
-        platform_dir = setupDirectory(platform, prefix=build_dir, **kwargs)
+        platform_dir = setupDirectory(platform, prefix=build_dir, name="Build directory", **kwargs)
 
         cmake.runCMake(platform=platform, platform_dir=platform_dir, **kwargs)
 
@@ -170,8 +171,8 @@ def iosBuild(
     xcodebuild.checkXCodeBuild(**kwargs)
     checkPath(**kwargs)
 
-    build_dir = setupDirectory(build_prefix, **kwargs)
-    install_dir = setupDirectory(install_prefix, **kwargs)
+    build_dir = setupDirectory(build_prefix, name="Build directory", **kwargs)
+    install_dir = setupDirectory(install_prefix, name="Install directory", **kwargs)
 
     toolchain = getToolchain(**kwargs)
     build(build_dir, install_dir=install_dir, toolchain_path=toolchain, **kwargs)
