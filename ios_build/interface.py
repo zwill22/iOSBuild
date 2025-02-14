@@ -37,8 +37,6 @@ def cmake(*args, cmake_command: str = "cmake", **kwargs):
     """
     printer = getPrinter(**kwargs)
     command = [cmake_command, *args]
-    if not printer.showError():
-        command.append("-Wno-dev")
     printer.print(" ".join(command), verbosity=2)
     try:
         callSubProcess(command, printer)

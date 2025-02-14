@@ -25,6 +25,7 @@ def testDefaults(capsys):
         "build_prefix": "build",
         "install_prefix": "install",
         "output_dir": os.getcwd(),
+        "generator": "Xcode",
         "clean_up": False,
         "platforms": ["OS64", "SIMULATORARM64", "MAC_ARM64"],
         "cmake_options": {},

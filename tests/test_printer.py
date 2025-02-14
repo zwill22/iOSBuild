@@ -181,11 +181,11 @@ def testShowError(print_level):
 def testPrintError(capsys, print_level):
     printer = Printer(print_level=print_level)
 
-    printer.printError("An error")
+    printer.printError("An error".encode())
 
     capture = capsys.readouterr()
     assert capture.out == ""
-    assert capture.err == "An error\n"
+    assert capture.err == "An error"
 
 
 @pytest.mark.parametrize("print_level", range(-1, 3))

@@ -83,6 +83,9 @@ def configure(
         "-B",
         platform_dir,
     ]
+    if not printer.showError():
+        local_options.append("-Wno-dev")
+
     interface.cmake(*global_options, *specific_options, *local_options, path, **kwargs)
     printer.printStat("CMake configuration complete")
 
