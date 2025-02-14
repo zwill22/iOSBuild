@@ -43,16 +43,16 @@ def testRunner(capfd):
         args,
         1,
         capfd,
-        out="Invalid input: CMake option PLATFORM is used by iOSBuild and cannot be specified",
+        err="Invalid input: CMake option PLATFORM is used by iOSBuild and cannot be specified",
     )
 
     args[1] = "-DOPTION=VALUE"
     args.append("-DOPTION=VALUE")
-    checkRunner(args, 1, capfd, out="Invalid input: Option OPTION already specified")
+    checkRunner(args, 1, capfd, err="Invalid input: Option OPTION already specified")
 
     args[1] = "--cmake"
     args[2] = "notcmake"
-    checkRunner(args, 1, capfd, out="Error: CMake not found")
+    checkRunner(args, 1, capfd, err="Error: CMake not found")
 
     # TODO Simulate a CMake error
     # TODO Simulate an xcodebuilderror
