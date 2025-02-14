@@ -11,7 +11,7 @@ def runner(args=None):
     iOSBuild runner.
 
     Args:
-        args (_type_, optional): Optional arguments for testing. Defaults to None.
+        args (list, optional): Optional arguments for testing. Defaults to None.
 
     Returns:
         int: exit code
