@@ -287,6 +287,21 @@ def parseArgs(args=None):
         dest="cmake_options",
     )
 
+    #TODO Add code to find available generators
+    generators = [
+        "Unix Makefiles",
+        "Ninja",
+        "Ninja Multi-Config",
+        "Xcode"
+    ]
+    parser.add_argument(
+        "--generator",
+        "-G", "-g",
+        help="CMake build system generator",
+        default="Xcode",
+        choices=generators
+    )
+
     json_options = parser.add_mutually_exclusive_group()
     json_options.add_argument(
         "--platform-json",

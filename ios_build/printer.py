@@ -98,7 +98,7 @@ class Printer:
         return self.verbosity > 1
 
     def printError(self, value):
-        print(value, file=sys.stderr)
+        sys.stderr.buffer.write(value)
 
     def printHeader(self, **kwargs):
         if self.verbosity < 0:
