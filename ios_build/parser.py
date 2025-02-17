@@ -140,7 +140,7 @@ def sortArgs(kwargs: argparse.Namespace) -> dict:
             print_level += v
         else:
             output[k] = v
-    
+
     return {**output, "print_level": print_level}
 
 
@@ -161,7 +161,7 @@ def parseArgs(args=None):
         """,
         epilog="""
         Thanks for using iOSBuild.
-        """
+        """,
     )
 
     # TODO Allow path to be a URL
@@ -169,17 +169,11 @@ def parseArgs(args=None):
 
     output_options = parser.add_mutually_exclusive_group()
     output_options.add_argument(
-        "-v", "--verbose",
-        help="Print verbose output",
-        action="count",
-        default=0
+        "-v", "--verbose", help="Print verbose output", action="count", default=0
     )
 
     output_options.add_argument(
-        "--quiet",
-        "-q",
-        help="Hide output",
-        action="store_true"
+        "--quiet", "-q", help="Hide output", action="store_true"
     )
 
     parser.add_argument(
@@ -192,7 +186,7 @@ def parseArgs(args=None):
     parser.add_argument(
         "--toolchain_dest",
         help="Set download destination for toolchain file",
-        default=tempfile.TemporaryDirectory()
+        default=tempfile.TemporaryDirectory(),
     )
 
     parser.add_argument(
@@ -215,7 +209,7 @@ def parseArgs(args=None):
         "-b",
         help="Build prefix for CMake absolute path or relative to path",
         dest="build_prefix",
-        default=tempfile.TemporaryDirectory()
+        default=tempfile.TemporaryDirectory(),
     )
 
     parser.add_argument(
@@ -223,20 +217,20 @@ def parseArgs(args=None):
         "-i",
         help="Prefix directory for installation, absolute path or relative to path",
         dest="install_prefix",
-        default=tempfile.TemporaryDirectory()
+        default=tempfile.TemporaryDirectory(),
     )
 
     parser.add_argument(
         "--output-dir",
         "-o",
         help="Directory in which to save output frameworks, defaults to current directory",
-        default=os.getcwd()
+        default=os.getcwd(),
     )
 
     parser.add_argument(
         "--overwrite",
         help="Overwrite any existing frameworks in the output directory",
-        action="store_true"
+        action="store_true",
     )
 
     parser.add_argument(
@@ -287,19 +281,15 @@ def parseArgs(args=None):
         dest="cmake_options",
     )
 
-    #TODO Add code to find available generators
-    generators = [
-        "Unix Makefiles",
-        "Ninja",
-        "Ninja Multi-Config",
-        "Xcode"
-    ]
+    # TODO Add code to find available generators
+    generators = ["Unix Makefiles", "Ninja", "Ninja Multi-Config", "Xcode"]
     parser.add_argument(
         "--generator",
-        "-G", "-g",
+        "-G",
+        "-g",
         help="CMake build system generator",
         default="Xcode",
-        choices=generators
+        choices=generators,
     )
 
     json_options = parser.add_mutually_exclusive_group()
@@ -315,7 +305,7 @@ def parseArgs(args=None):
     return parser.parse_args(args=args)
 
 
-#TODO Move to separate module
+# TODO Move to separate module
 def parse(args=None) -> dict:
     """
     Parse command-line arguments.

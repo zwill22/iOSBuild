@@ -197,7 +197,7 @@ def testPrintHeader(capsys, print_level):
     if print_level < 0:
         assert capture.out == ""
         return
-    
+
     with open("ios_build/logo.txt", "r") as f:
         logo = f.read()
         logo += "\n\n"
@@ -214,9 +214,9 @@ def testPrintFooter(capsys, print_level):
     if print_level < 0:
         assert capture.out == ""
         return
-    
+
     n = printer.width
-    
+
     expected = "\U0001f5a5 " * n
     expected += "\niOSBuild complete\n"
     expected += "Time:\t{}\n".format(time)

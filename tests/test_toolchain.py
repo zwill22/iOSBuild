@@ -16,7 +16,7 @@ def testDownload(tmp_path):
     fake_url = "https://github.com/zwill22/iOSBuild/blob/main/example/NotAFile.txt"
     output2 = os.path.join(tmp_path, "nofile.txt")
     with pytest.raises(IOSBuildError, match="Unable to download file"):
-        download(fake_url, output2)    
+        download(fake_url, output2)
 
 
 @pytest.mark.parametrize("print_level", range(-1, 3))

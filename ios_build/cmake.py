@@ -24,7 +24,7 @@ def checkInput(*args):
     for arg in args:
         if not arg:
             raise TypeError("expected str instance, NoneType found")
-         
+
 
 def configure(
     path: str = None,
@@ -39,8 +39,8 @@ def configure(
 ):
     """
     Run the CMake configure step. This passes the `path` to CMake along with
-    all the options necessary for CMake to run the configuration. 
-    Some of the cmake options are fixed and may not be altered for compatibility 
+    all the options necessary for CMake to run the configuration.
+    Some of the cmake options are fixed and may not be altered for compatibility
     with the ios toolchain. CMake cache options may be specified using the
     `cmake_options` dictionary and platform specific options using a similar embedded
     dictionary in `platform_options` keyed by platform name.
@@ -94,7 +94,7 @@ def build(platform_dir: str = None, config: str = "Release", **kwargs):
     """
     CMake build step. Assumes configuration is completed runs `cmake --build {platform_dir} --config {config}`
     where `platform_dir` is the CMake build directory.
-    
+
     Args:
         platform_dir (str, optional): Directory containing CMake configuration (CMakeCache.txt). Defaults to None.
         config (str, optional): CMake configuration to build. Defaults to "Release".

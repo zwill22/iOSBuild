@@ -47,7 +47,9 @@ def invertDict(libraries: dict) -> dict[str, dict[str, str]]:
     return result
 
 
-def findlibraries(install_dir: str, platforms: list[str] = [], **kwargs) -> dict[str, dict[str, str]]:
+def findlibraries(
+    install_dir: str, platforms: list[str] = [], **kwargs
+) -> dict[str, dict[str, str]]:
     """
     Find static libraries for each platform in a directory. Assuming files for each platform
     are contained in a subdirectory of the same name.

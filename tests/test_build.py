@@ -72,8 +72,9 @@ def testCreateFrameworks(tmp_path, print_level, capfd):
     for platform in platforms:
         createEmptyFile(tmp_path, platform, "libexample.a")
     with pytest.raises(XCodeBuildError):
-        build.createFrameworks(tmp_path, output_dir=tmp_path, printer=printer,
-                               platforms=platforms)
+        build.createFrameworks(
+            tmp_path, output_dir=tmp_path, printer=printer, platforms=platforms
+        )
     captured = capfd.readouterr()
     assert "error: unable to create a Mach-O from the binary at" in captured.err
 
@@ -115,48 +116,49 @@ def testBuildFn(tmp_path, capfd, print_level):
     path = str(tmp_path)
 
     printer = Printer(print_level=print_level)
-    
+
     # TODO Add check to prevent using the same directory for build and install
     platforms = ["One"]
     with pytest.raises(CMakeError):
-        build.build(path, platforms=platforms,
-                    path=path, printer=printer,
-                    toolchain_path=path, install_dir=path)
-        
+        build.build(
+            path,
+            platforms=platforms,
+            path=path,
+            printer=printer,
+            toolchain_path=path,
+            install_dir=path,
+        )
+
     captured = capfd.readouterr()
     assert "CMake Error: The source directory " in captured.err
     assert "does not appear to contain CMakeLists.txt" in captured.err
-    
+
 
 @pytest.mark.parametrize("print_level", range(-1, 3))
 def testBuildFails(capfd, print_level):
     kwargs = {}
     kwargs["print_level"] = print_level
 
-    with pytest.raises(TypeError, match="checkPath\(\) missing 1 required positional argument: "):
+    with pytest.raises(
+        TypeError, match="checkPath\(\) missing 1 required positional argument: "
+    ):
         build.runBuild(**kwargs)
 
     kwargs["path"] = "example"
     with pytest.raises(ValueError, match="Toolchain file not found"):
         build.runBuild(**kwargs)
-    
+
     kwargs["toolchain"] = "example/CMakeLists.txt"
     with pytest.raises(RuntimeError, match="No platforms specified"):
         build.runBuild(**kwargs)
 
-    #TODO Consider skipping xcodebuild for single platform build
+    # TODO Consider skipping xcodebuild for single platform build
     kwargs["platforms"] = ["One"]
     with pytest.raises(CMakeError):
         build.runBuild(**kwargs)
-    
+
     captured = capfd.readouterr()
     assert "Could not find toolchain file: example/CMakeLists.txt" in captured.err
-
-
-    
-
-
-
 
 
 def checkBuild(build_path, install_path, output_path, **kwargs):
