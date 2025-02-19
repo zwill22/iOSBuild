@@ -3,6 +3,7 @@ import pytest
 import tempfile
 
 from ios_build import cmake
+from ios_build.interface import callSubProcess
 from ios_build.printer import Printer
 from ios_build.errors import IOSBuildError, CMakeError
 
@@ -74,7 +75,25 @@ def checkConfig(platform_dir: str, generator: str):
         assert checkFile("build.ninja")
 
 
-# TODO Check which generators are available before test
+def checkGenerator(generator):
+    if generator == "Xcode":
+        command = ["xcodebuild", "-version"]
+    elif generator == "Unix Makefiles":
+        command = ["make", "--version"]
+    elif generator == "Ninja":
+        command = ["ninja", "--version"]
+    else:
+        # Invalid generator
+        return False
+    
+    try:
+        callSubProcess(command, Printer())
+    except RuntimeError:
+        return False
+    
+    return True
+
+
 generators = ["Xcode", "Unix Makefiles", "Ninja"]
 platforms = ["OS64"]
 platform_options = [{}, {"OS64": {}}]
@@ -96,6 +115,8 @@ def testConfigure(
     cmake_options,
     toolchain_file,
 ):
+    if not checkGenerator(generator):
+        return
     path = "example"
     printer = Printer(print_level=print_level)
 
