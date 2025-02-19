@@ -164,7 +164,6 @@ def parseArgs(args=None):
         """,
     )
 
-    # TODO Allow path to be a URL
     parser.add_argument("path", help="Enter path to repository")
 
     output_options = parser.add_mutually_exclusive_group()
@@ -238,8 +237,6 @@ def parseArgs(args=None):
         help="Cleans up all build files after completion",
         action="store_true",
     )
-
-    # TODO Add no-install option
 
     platforms = [
         "OS",

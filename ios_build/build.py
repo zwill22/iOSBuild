@@ -9,7 +9,6 @@ from ios_build.printer import Printer, getPrinter
 from ios_build.errors import IOSBuildError
 
 
-# TODO Let a URL be a valid path
 def checkPath(path: str, **kwargs):
     """
     Determines whether the given path exists and is a valid CMake project,
