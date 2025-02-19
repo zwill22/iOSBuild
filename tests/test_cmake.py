@@ -88,6 +88,8 @@ def checkGenerator(generator):
     
     try:
         callSubProcess(command, Printer())
+    except FileNotFoundError:
+        return False
     except RuntimeError:
         return False
     
