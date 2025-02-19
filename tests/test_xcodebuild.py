@@ -32,3 +32,7 @@ def testFramework(tmp_path, capfd, print_level):
 
     captured = capfd.readouterr()
     assert "unable to create a Mach-O from the binary at" in captured.err
+
+    createEmptyFile(tmp_path, "lib.xcframework", "lib.a")
+    with pytest.raises(IOSBuildError, match="Output file already exists: "):
+        xcodebuild.createXCFramework(tmp_path, "lib", files, printer=printer)
