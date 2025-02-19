@@ -85,18 +85,29 @@ def checkGenerator(generator):
     else:
         # Invalid generator
         return False
-    
+
     try:
         callSubProcess(command, Printer())
     except FileNotFoundError:
         return False
     except RuntimeError:
         return False
-    
+
     return True
 
 
-generators = ["Xcode", "Unix Makefiles", "Ninja"]
+def getGenerators():
+    possible_generators = ["Xcode", "Unix Makefiles", "Ninja"]
+    available_generators = []
+    for generator in possible_generators:
+        available = checkGenerator(generator)
+        if available:
+            available_generators.append(generator)
+
+    return available_generators
+
+
+generators = getGenerators()
 platforms = ["OS64"]
 platform_options = [{}, {"OS64": {}}]
 cmake_options = [{}, {"OPTION": "VALUE"}]
@@ -117,8 +128,6 @@ def testConfigure(
     cmake_options,
     toolchain_file,
 ):
-    if not checkGenerator(generator):
-        return
     path = "example"
     printer = Printer(print_level=print_level)
 
