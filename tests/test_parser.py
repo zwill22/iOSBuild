@@ -29,7 +29,6 @@ def testDefaults(capsys):
         "clean_up": False,
         "platforms": ["OS64", "SIMULATORARM64", "MAC_ARM64"],
         "cmake_options": {},
-        "overwrite": False,
     }
 
     assert set(expected_result) == set(result)
