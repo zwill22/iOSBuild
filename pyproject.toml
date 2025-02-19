@@ -30,7 +30,9 @@ classifiers = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest"
+    "pytest",
+    "coverage",
+    "ruff"
 ]
 
 
