@@ -227,12 +227,6 @@ def parseArgs(args=None):
     )
 
     parser.add_argument(
-        "--overwrite",
-        help="Overwrite any existing frameworks in the output directory",
-        action="store_true",
-    )
-
-    parser.add_argument(
         "--clean-up",
         help="Cleans up all build files after completion",
         action="store_true",
