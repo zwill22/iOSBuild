@@ -1,19 +1,18 @@
 import os
 
 from ios_build import interface
+from ios_build.printer import getPrinter
+from ios_build.errors import IOSBuildError
 
 
 def checkXCodeBuild(**kwargs):
     """
     Check availability of `xcodebuild` command using `xcodebuild -version`.
-
-    Raises:
-        RuntimeError: Raised if command is not found
     """
-    try:
-        interface.xcodebuild("-version", **kwargs)
-    except FileNotFoundError as e:
-        raise RuntimeError("XCodeBuild not found: {}".format(e))
+    printer = getPrinter(**kwargs)
+    printer.print("Checking XCodeBuild...", verbosity=1)
+    interface.xcodebuild("-version", **kwargs)
+    printer.printStat("XCodeBuild found")
 
 
 def createXCFramework(
@@ -32,6 +31,8 @@ def createXCFramework(
         files (dict[str, str]): All library files in a dictionary
     """
     output_file = os.path.join(install_dir, "{}.xcframework".format(lib))
+    if os.path.isdir(output_file):
+        raise IOSBuildError("Output file already exists: {}".format(output_file))
     commands = ["-create-xcframework"]
     for library in files.values():
         commands.append("-library")

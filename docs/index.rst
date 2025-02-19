@@ -14,7 +14,7 @@ This page contains the documentation for the `iOSBuild`_ project.
    
    about
    modules
-   license
+   link_license
 
 .. seealso::
 

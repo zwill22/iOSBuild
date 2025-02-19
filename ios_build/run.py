@@ -1,29 +1,49 @@
+import sys
+
 from ios_build.parser import parse
 from ios_build.build import runBuild
 
+from ios_build.errors import IOSBuildError, CMakeError, XCodeBuildError, ParserError
 
-# TODO Add custom exceptions
-def main(args=None):
+
+def runner(args=None):
     """
-    Main iOSBuild function.
+    iOSBuild runner.
 
     Args:
-        args (_type_, optional): Optional arguments for testing. Defaults to None.
+        args (list, optional): Optional arguments for testing. Defaults to None.
 
     Returns:
         int: exit code
     """
+    if sys.platform != "darwin":
+        print("! Invalid OS, iOSBuild only runs on macOS", file=sys.stderr)
+        return 4
+
     try:
         kwargs = parse(args=args)
-        runBuild(**kwargs)
-    except RuntimeError as error:
-        print("! Error occurred")
-        print("! Message:", error)
-        print("! iOS Build terminating...")
+    except IOSBuildError as error:
+        print("Invalid input: {}".format(error), file=sys.stderr)
         return 1
+    except ParserError:
+        return 2
+
+    try:
+        runBuild(**kwargs)
+    except IOSBuildError as error:
+        print("Error: {}".format(error), file=sys.stderr)
+        return 1
+    except CMakeError as error:
+        print("CMake Error", file=sys.stderr)
+        print("Message: {}".format(error), file=sys.stderr)
+        return 2
+    except XCodeBuildError as error:
+        print("! XCodeBuild error", file=sys.stderr)
+        print("! Message: {}".format(error), file=sys.stderr)
+        return 3
 
     return 0
 
 
 if __name__ == "__main__":
-    main()
+    runner()

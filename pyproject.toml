@@ -7,10 +7,11 @@ name = "iOSBuild"
 description = "A Python script for creating XCFrameworks for CMake projects"
 requires-python = ">= 3.9"
 authors = [ { name = "Z M Williams", email = "z.m.will@icloud.com" }]
-version = "0.1.0"
+version = "0.2.0"
 readme = "README.md"
 license = { file = "LICENSE" }
 dependencies = [
+    "requests",
     "cmake>=3.22"
 ]
 metadata_version = "2.4"
@@ -27,6 +28,14 @@ classifiers = [
     "Programming Language :: Python :: 3.13"
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "coverage",
+    "ruff"
+]
+
+
 [project.urls]
 Repository = "https://github.com/zwill22/iOSBuild"
 Documentation = "https://iosbuild.readthedocs.io/en/latest/"
@@ -35,7 +44,7 @@ Documentation = "https://iosbuild.readthedocs.io/en/latest/"
 packages = ["ios_build"]
 
 [project.scripts]
-ios_build = "ios_build.run:main"
+ios_build = "ios_build.run:runner"
 
 [tool.pytest.ini_options]
 minversion = "6.0"

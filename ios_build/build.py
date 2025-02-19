@@ -1,55 +1,54 @@
 import os
 import shutil
-from urllib.request import urlretrieve
 
 from ios_build import cmake
 from ios_build import search
 from ios_build import xcodebuild
-from ios_build.printer import printValue, tick, cross
+from ios_build.toolchain import getToolchain
+from ios_build.printer import Printer, getPrinter
+from ios_build.errors import IOSBuildError
 
-# TODO Let a URL be a valid path
-def checkPath(path: str, verbose: bool = False, **kwargs):
+
+def checkPath(path: str, **kwargs):
     """
-    Determines whether the given path exists and is a valid CMake project, 
+    Determines whether the given path exists and is a valid CMake project,
     i.e. contains a `CMakeLists.txt` file.
     If the path is not found a `NotADirectoryError` is thown.
-    Else if the path does not contain a `CMakeLists.txt` file, then 
+    Else if the path does not contain a `CMakeLists.txt` file, then
     a `FileNotFoundError` is raised. Whether the `CMakeLists.txt` file is
     valid is not checked here.
 
     Args:
         path (str): Local path for the CMake project.
-        verbose (bool, optional): Whether to print details. Defaults to False.
 
     Raises:
-        NotADirectoryError: Raised if path is not valid.
-        FileNotFoundError: Raised if the path does not contain a `CMakeLists.txt` file.
+        IOSBuildError: Raised if path is not a valid CMake project directory.
     """
     if not os.path.isdir(path):
-        raise NotADirectoryError("{} is not a directory".format(path))
+        raise IOSBuildError("No such directory: {}".format(path))
 
-    if verbose:
-        print("Running iOS Build...")
-        printValue("Searching for CMakeLists.txt in:", path)
+    printer = getPrinter(**kwargs)
+
+    printer.print("Setting up directories...", verbosity=1)
 
     cmake_file = "CMakeLists.txt"
     cmake_path = os.path.join(path, cmake_file)
-    if os.path.isfile(cmake_path):
-        if verbose:
-            tick()
+    full_path = os.path.abspath(cmake_path)
+    if os.path.isfile(full_path):
+        printer.printStat("CMakeLists.txt found")
+        printer.printValue("CMakeLists.txt path", full_path, verbosity=1)
     else:
-        if verbose:
-            cross()
-        raise FileNotFoundError(
-            "Path is not a valid CMake Project, no such file:\t{}".format(cmake_path)
+        printer.printStat("Cannot find CMakeLists.txt", tick="cross")
+        raise IOSBuildError(
+            "Invalid CMake project provided, no such file:\t{}".format(full_path)
         )
 
 
 def setupDirectory(
-    dir_prefix: str,
-    verbose: bool = False,
+    dir_prefix,
     clean: bool = False,
     prefix: str = None,
+    name: str = "Directory",
     **kwargs,
 ) -> str:
     """
@@ -61,8 +60,7 @@ def setupDirectory(
     to `prefix`.
 
     Args:
-        dir_prefix (str): Relative or absolute path to
-        verbose (bool, optional): Print output. Defaults to False.
+        dir_prefix: Path to directory
         clean (bool, optional): Clean any existing directory at desired location. Defaults to False.
         prefix (str, optional): Optional path prefix. Defaults to None.
 
@@ -70,7 +68,11 @@ def setupDirectory(
         str: _description_
     """
     path = os.path.join(prefix, dir_prefix) if prefix else dir_prefix
-    new_dir = os.path.abspath(path)
+    try:
+        new_dir = os.path.abspath(path)
+    except TypeError:
+        new_dir = path.name
+
     if os.path.isdir(new_dir):
         if clean:
             shutil.rmtree(new_dir)
@@ -78,65 +80,45 @@ def setupDirectory(
     else:
         os.makedirs(new_dir)
 
-    if verbose:
-        printValue("Setup directory:", new_dir)
-        tick()
+    printer = getPrinter(**kwargs)
+    printer.printValue(name, new_dir, verbosity=1)
 
     return new_dir
 
 
-def getToolchain(
-    verbose: bool = False, toolchain: str = None, download_dir=".", **kwargs
-) -> str:
+def createFrameworks(install_dir: str, output_dir: str = None, **kwargs):
     """
-    Retrieve the toolchain file for building CMake projects for Apple
-    operating systems. The default version is specified in the parser.
-    The remaining program is based on this version by Leetal.
-
-    Args:
-        verbose (bool, optional): Print output. Defaults to False.
-        toolchain (str, optional): Path or URL to toolchain file. Defaults to None.
-        download_dir (str, optional): Directory to download file to. Defaults to ".".
-
-    Raises:
-        ValueError: Raised if no toolchain file is specified.
-
-    Returns:
-        str: Path to toolchain file.
-    """
-    if not toolchain:
-        raise RuntimeError("Toolchain file not found")
-
-    filename = os.path.join(download_dir, "ios.toolchain.cmake")
-
-    if verbose:
-        printValue("Downloading toolchain file:", toolchain)
-    file, output = urlretrieve(toolchain, filename=filename)
-    filepath = os.path.abspath(file)
-    if verbose:
-        tick()
-        printValue("Toolchain file saved to:", filepath)
-        tick()
-
-    return os.path.abspath(filepath)
-
-
-def createFrameworks(install_dir: str, **kwargs):
-    """
-    Searches for static libraries in the `install_dir` and uses them to create 
-    an `xcframework` for each. The framework contains versions of the library 
+    Searches for static libraries in the `install_dir` and uses them to create
+    an `xcframework` for each. The framework contains versions of the library
     for each platform.
 
     Args:
         install_dir (str): Parent directory containing static libraries for all platforms.
     """
-    # TODO Add silent option
-    print("Creating XCFrameworks...")
+    if not output_dir:
+        raise ValueError("No output directory specified")
+
+    printer = getPrinter(**kwargs)
+
+    printer.print("Creating XCFrameworks...", verbosity=1)
     libraries = search.findlibraries(install_dir, **kwargs)
+
+    n = 0
     for lib, files in libraries.items():
-        xcodebuild.createXCFramework(install_dir, lib, files, **kwargs)
+        xcodebuild.createXCFramework(output_dir, lib, files, **kwargs)
+        printer.printValue(
+            "Created XC Framework",
+            "{}.xcframwork".format(os.path.join(output_dir, lib)),
+            end="\n",
+        )
+        n += 1
+    if n == 0:
+        printer.print("No frameworks created", end="\t")
+        printer.cross()
 
 
+# TODO Install xcframework to new dir so install may be safely deleted
+# Issue URL: https://github.com/zwill22/iOSBuild/issues/1
 def cleanUp(build_dir: str, install_dir: str, clean_up: bool = False, **kwargs):
     """
     Function to clean up files after the program is run.
@@ -146,35 +128,41 @@ def cleanUp(build_dir: str, install_dir: str, clean_up: bool = False, **kwargs):
         install_dir (str): Parent directory of installations.
         clean_up (bool, optional): Whether to remove the above directories. Defaults to False.
     """
-    print("Cleaning Up", end="\t")
+    printer = getPrinter(**kwargs)
+    printer.printStat("Cleaning Up", tick=False)
     if clean_up:
         shutil.rmtree(build_dir)
         shutil.rmtree(install_dir)  # TODO Remove install_dir?
-    tick()
+    printer.tick()
 
 
-#def build(build_dir: str, install_dir: str, toolchain: str, path: str = None, platforms: list[str] = None, **kwargs):
 def build(build_dir: str, platforms: list[str] = None, **kwargs):
     """
-    Loop through each platform and run CMake for each. 
+    Loop through each platform and run CMake for each.
     This includes the configure step, building and installation.
 
     Args:
         build_dir (str): Parent directory for all build files
-        platforms (list[str], optional): _description_. Defaults to None.
+        platforms (list[str], optional): List of platforms to build. Defaults to None.
 
     Raises:
         RuntimeError: _description_
     """
+    printer = getPrinter(**kwargs)
+
     if not platforms:
         raise RuntimeError("No platforms specified")
     for platform in platforms:
-        platform_dir = setupDirectory(platform, prefix=build_dir, **kwargs)
+        printer.printValue("Platform", platform, end="\n")
+
+        platform_dir = setupDirectory(
+            platform, prefix=build_dir, name="Build directory", **kwargs
+        )
 
         cmake.runCMake(platform=platform, platform_dir=platform_dir, **kwargs)
 
 
-def runBuild(
+def iosBuild(
     build_prefix: str = "build",
     install_prefix: str = "install",
     **kwargs,
@@ -189,15 +177,12 @@ def runBuild(
     """
     cmake.checkCMake(**kwargs)
     xcodebuild.checkXCodeBuild(**kwargs)
-    try:
-        checkPath(**kwargs)
-    except NotADirectoryError as e:
-        raise RuntimeError(e)
-    except FileNotFoundError as e:
-        raise RuntimeError(e)
+    checkPath(**kwargs)
 
-    build_dir = setupDirectory(build_prefix, **kwargs)
-    install_dir = setupDirectory(install_prefix, **kwargs)
+    build_dir = setupDirectory(build_prefix, name="Build directory", **kwargs)
+    install_dir = setupDirectory(install_prefix, name="Install directory", **kwargs)
+    if build_dir == install_dir:
+        raise IOSBuildError("Install directory cannot be the same as build directory")
 
     toolchain = getToolchain(**kwargs)
     build(build_dir, install_dir=install_dir, toolchain_path=toolchain, **kwargs)
@@ -206,3 +191,21 @@ def runBuild(
     createFrameworks(install_dir, **kwargs)
 
     cleanUp(build_dir, install_dir, **kwargs)
+
+
+def runBuild(print_level: int = 0, **kwargs):
+    """
+    Run the full iOSBuild using CMake and XCodeBuild for the CMake project
+    using the options obtained from the parser.
+
+    Args:
+        build_prefix (str, optional): Build directory prefix. Defaults to "build".
+        install_prefix (str, optional): Install directory prefix. Defaults to "install".
+    """
+    printer = Printer(print_level=print_level)
+
+    printer.printHeader(**kwargs)
+
+    iosBuild(printer=printer, **kwargs)
+
+    printer.printFooter(**kwargs)

@@ -1,25 +1,30 @@
 import subprocess
 
+from ios_build.printer import Printer, getPrinter
+from ios_build.errors import CMakeError, IOSBuildError, XCodeBuildError
 
-def callSubProcess(command: list):
+
+def callSubProcess(command: list, printer: Printer):
     """
     Call a subprocess specified using a list of commands.
 
     Args:
         command (list): List of commands to run formatted for `subprocess`.
+        printer (Printer): Printer class
 
     Raises:
         RuntimeError: Raised if the process returns a non-zero exit code.
     """
-    process = subprocess.Popen(command)
+    stdout = None if printer.showOutput() else subprocess.PIPE
+    stderr = None if printer.showError() else subprocess.PIPE
 
-    process.communicate()
-    if process.returncode != 0:
-        raise RuntimeError(
-            "Error occurred during subprocess {0}: {1} return non-zero exit status {2}".format(
-                command[0], " ".join(command), process.returncode
-            )
-        )
+    p = subprocess.run(command, stdout=stdout, stderr=stderr)
+
+    try:
+        p.check_returncode()
+    except subprocess.CalledProcessError as e:
+        printer.printError(p.stderr)
+        raise RuntimeError(e)
 
 
 def cmake(*args, cmake_command: str = "cmake", **kwargs):
@@ -28,12 +33,20 @@ def cmake(*args, cmake_command: str = "cmake", **kwargs):
 
     Args:
         cmake_command (str, optional): Custom CMake command. Defaults to "cmake".
+        verbose (bool): Toggle additional output
     """
+    printer = getPrinter(**kwargs)
     command = [cmake_command, *args]
-    print(" ".join(command))
-    callSubProcess(command)
+    printer.print(" ".join(command), verbosity=2)
+    try:
+        callSubProcess(command, printer)
+    except FileNotFoundError:
+        raise IOSBuildError("CMake not found")
+    except RuntimeError as e:
+        raise CMakeError(e)
 
 
+# TODO No error thrown when xcframwork already exists
 def xcodebuild(*args, xcode_build_command: str = "xcodebuild", **kwargs):
     """
     Runs `xcodebuild` using subprocess.
@@ -41,6 +54,12 @@ def xcodebuild(*args, xcode_build_command: str = "xcodebuild", **kwargs):
     Args:
         xcode_build_command (str, optional): Custom xcodebuild command. Defaults to "xcodebuild".
     """
+    printer = getPrinter(**kwargs)
     command = [xcode_build_command, *args]
-    print(" ".join(command))
-    callSubProcess(command)
+    printer.print(" ".join(command), verbosity=2)
+    try:
+        callSubProcess(command, printer)
+    except FileNotFoundError:
+        raise IOSBuildError("XCodeBuild not found")
+    except RuntimeError as e:
+        raise XCodeBuildError(e)
