@@ -181,6 +181,8 @@ def iosBuild(
 
     build_dir = setupDirectory(build_prefix, name="Build directory", **kwargs)
     install_dir = setupDirectory(install_prefix, name="Install directory", **kwargs)
+    if build_dir == install_dir:
+        raise IOSBuildError("Install directory cannot be the same as build directory")
 
     toolchain = getToolchain(**kwargs)
     build(build_dir, install_dir=install_dir, toolchain_path=toolchain, **kwargs)

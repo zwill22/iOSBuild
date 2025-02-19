@@ -160,6 +160,12 @@ def testBuildFails(capfd, print_level):
     captured = capfd.readouterr()
     assert "Could not find toolchain file: example/CMakeLists.txt" in captured.err
 
+    kwargs["build_prefix"] = "install"
+    with pytest.raises(
+        IOSBuildError, match="nstall directory cannot be the same as build directory"
+    ):
+        build.runBuild(**kwargs)
+
 
 def checkBuild(build_path, install_path, output_path, **kwargs):
     assert os.path.isdir(build_path)
