@@ -26,7 +26,7 @@ classifiers = [
 ]
 
 [dependency-groups]
-dev = ["pytest", "coverage", "ruff", "py-cov"]
+dev = ["pytest", "coverage", "ruff", "pytest-cov"]
 doc = ["sphinx", "sphinx-rtd-theme", "myst-parser"]
 
 
