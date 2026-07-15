@@ -26,7 +26,11 @@ def isURL(inputPath: str) -> bool:
     return False
 
 
-def download(url: str, output_file: str):
+def request_function(url: str):
+    return requests.get(url)
+
+
+def download(url: str, output_file: str, request_fn=request_function):
     """
     Download URL to output file
 
@@ -38,7 +42,7 @@ def download(url: str, output_file: str):
         IOSBuildError: If requests encounters an error
     """
     try:
-        r = requests.get(url)  # create HTTP response object
+        r = request_fn(url)
     except requests.exceptions.ConnectionError:
         raise IOSBuildError("Unable to establish internet connection")
 

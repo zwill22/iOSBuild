@@ -74,21 +74,19 @@ def configure(
         "-D{0}={1}".format(k, v) for k, v in platform_specific_options.items()
     ]
 
-    if install_dir and platform:
-        install_prefix = f"-DCMAKE_INSTALL_PREFIX={os.path.join(install_dir, platform)}"
-    else:
-        install_prefix = ""
+    platform_prefix = (
+        os.path.join(install_dir, platform) if install_dir and platform else ""
+    )
     local_options = [
         f"-G{generator}",
         f"-DCMAKE_TOOLCHAIN_FILE={toolchain_path}",
         f"-DPLATFORM={platform}",
-        install_prefix,
-        "-S",
+        f"-DCMAKE_INSTALL_PREFIX={platform_prefix}-S",
         path,
         "-B",
         platform_dir,
     ]
-    
+
     if not printer.showError():
         local_options.append("-Wno-author")
 
