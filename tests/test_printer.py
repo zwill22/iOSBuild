@@ -1,6 +1,4 @@
 import pytest
-import tempfile
-
 from ios_build.printer import Printer, getPrinter
 
 
@@ -151,8 +149,7 @@ def testHeaderDict(capsys, value, expected_output, print_level):
 
 @pytest.mark.parametrize("print_level", range(-1, 3))
 def testTempDir(capsys, tmp_path, print_level):
-    tmp = tempfile.TemporaryDirectory(dir=tmp_path)
-    kwargs = {"Dir": tmp}
+    kwargs = {"Dir": tmp_path}
 
     printer = Printer(print_level=print_level)
 
@@ -160,7 +157,7 @@ def testTempDir(capsys, tmp_path, print_level):
 
     capture = capsys.readouterr()
 
-    assert capture.out == "Dir                              {}\n".format(tmp.name)
+    assert capture.out == f"Dir                              {tmp_path}\n"
 
 
 @pytest.mark.parametrize("print_level", range(-1, 3))
@@ -219,7 +216,7 @@ def testPrintFooter(capsys, print_level):
 
     expected = "\U0001f5a5 " * n
     expected += "\niOSBuild complete\n"
-    expected += "Time:\t{}\n".format(time)
+    expected += f"Time:\t{time}\n"
     expected += "\U0001f4bb" * n
     expected += "\n"
 

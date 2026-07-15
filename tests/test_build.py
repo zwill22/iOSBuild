@@ -1,17 +1,17 @@
+from pathlib import Path
 import re
 
 import pytest
-import os
 
-from .test_search import createEmptyFile
+from ios_build.config import parse
 from ios_build import build
 from ios_build.printer import Printer
-from ios_build.parser import parse
 from ios_build.errors import IOSBuildError, XCodeBuildError, CMakeError
+from tests.tools import createEmptyFile
 
 
 @pytest.mark.parametrize("print_level", range(-1, 3))
-def testCheckPath(print_level):
+def testCheckPath(print_level: int):
     """
     Check path contains a CMakeLists.txt file
     """
@@ -31,12 +31,12 @@ def testCheckPath(print_level):
 
 @pytest.mark.parametrize("print_level", range(-1, 3))
 @pytest.mark.parametrize("clean", [True, False])
-def testSetupDirectory(tmp_path, print_level, clean):
+def testSetupDirectory(tmp_path: Path, print_level: int, clean: bool):
     printer = Printer(print_level=print_level)
     directory = build.setupDirectory(tmp_path, printer=printer, clean=clean)
 
-    assert directory == os.path.abspath(tmp_path)
-    assert os.path.isdir(directory)
+    assert directory == tmp_path.absolute()
+    assert directory.exists()
 
     sub_dir = "new_directory"
 
@@ -44,22 +44,20 @@ def testSetupDirectory(tmp_path, print_level, clean):
         sub_dir, printer=printer, clean=clean, prefix=tmp_path
     )
 
-    assert directory2 == str(tmp_path / sub_dir)
-    assert os.path.isdir(directory2)
+    assert directory2 == tmp_path / sub_dir
+    assert directory2.exists()
 
     directory3 = build.setupDirectory(tmp_path, printer=printer, clean=clean)
 
-    assert directory3 == os.path.abspath(tmp_path)
-    assert os.path.isdir(directory3)
+    assert directory3 == tmp_path.absolute()
+    assert directory3.exists()
 
 
 @pytest.mark.parametrize("print_level", range(-1, 3))
-def testCreateFrameworks(tmp_path, print_level, capfd):
+def testCreateFrameworks(tmp_path, print_level: int, capfd):
     printer = Printer(print_level=print_level)
-    with pytest.raises(ValueError, match="No output directory specified"):
-        build.createFrameworks(tmp_path, printer=printer)
 
-    build.createFrameworks(tmp_path, output_dir=tmp_path, printer=printer)
+    build.createFrameworks(tmp_path, tmp_path, printer=printer)
     if print_level >= 0:
         captured = capfd.readouterr()
         assert "No frameworks created\t\U0000274c" in captured.out
@@ -69,48 +67,45 @@ def testCreateFrameworks(tmp_path, print_level, capfd):
     for platform in platforms:
         createEmptyFile(tmp_path, platform, "libexample.a")
     with pytest.raises(XCodeBuildError):
-        build.createFrameworks(
-            tmp_path, output_dir=tmp_path, printer=printer, platforms=platforms
-        )
+        build.createFrameworks(tmp_path, tmp_path, printer=printer, platforms=platforms)
     captured = capfd.readouterr()
     assert "error: unable to create a Mach-O from the binary at" in captured.err
 
 
-def testCleanUp(tmp_path):
-    assert os.path.isdir(tmp_path)
+def testCleanUp(tmp_path: Path):
+    assert tmp_path.exists()
 
-    build_path = os.path.join(tmp_path, "build")
-    install_path = os.path.join(tmp_path, "install")
+    build_path = tmp_path / "build"
+    install_path = tmp_path / "install"
 
-    assert not os.path.isdir(build_path)
-    assert not os.path.isdir(install_path)
+    assert not build_path.exists()
+    assert not install_path.exists()
 
     build_dir = build.setupDirectory(build_path)
     install_dir = build.setupDirectory(install_path)
 
     assert build_dir == build_path
-    assert os.path.isdir(build_dir)
+    assert build_dir.exists()
 
     assert install_dir == install_path
-    assert os.path.isdir(build_dir)
+    assert build_dir.exists()
 
     build.cleanUp(build_dir, install_dir, clean_up=False)
 
-    assert os.path.isdir(build_dir)
-    assert os.path.isdir(build_dir)
+    assert build_dir.exists()
+    assert install_dir.exists()
 
     build.cleanUp(build_dir, install_dir, clean_up=True)
-    assert not os.path.isdir(build_dir)
-    assert not os.path.isdir(install_dir)
-    assert os.path.isdir(tmp_path)
+    assert not build_dir.exists()
+    assert not install_dir.exists()
+
+    assert tmp_path.exists()
 
 
 @pytest.mark.parametrize("print_level", range(-1, 3))
-def testBuildFn(tmp_path, capfd, print_level):
+def testBuildFn(tmp_path: Path, capfd: pytest.CaptureFixture[str], print_level: int):
     with pytest.raises(RuntimeError, match="No platforms specified"):
         build.build(tmp_path)
-
-    path = str(tmp_path)
 
     printer = Printer(print_level=print_level)
 
@@ -118,12 +113,12 @@ def testBuildFn(tmp_path, capfd, print_level):
     platforms = ["One"]
     with pytest.raises(CMakeError):
         build.build(
-            path,
+            tmp_path,
             platforms=platforms,
-            path=path,
+            path=tmp_path,
             printer=printer,
-            toolchain_path=path,
-            install_dir=path,
+            toolchain_path=tmp_path,
+            install_dir=tmp_path,
         )
 
     captured = capfd.readouterr()
@@ -132,7 +127,7 @@ def testBuildFn(tmp_path, capfd, print_level):
 
 
 @pytest.mark.parametrize("print_level", range(-1, 3))
-def testBuildFails(capfd, print_level):
+def testBuildFails(capfd: pytest.CaptureFixture[str], print_level: int):
     kwargs = {}
     kwargs["print_level"] = print_level
 
@@ -170,35 +165,34 @@ def testBuildFails(capfd, print_level):
         build.runBuild(**kwargs)
 
 
-def checkBuild(build_path, install_path, output_path, **kwargs):
-    assert os.path.isdir(build_path)
-    assert os.path.isdir(install_path)
-    assert os.path.isdir(output_path)
+def checkBuild(build_path: Path, install_path: Path, output_path: Path, **kwargs):
+    assert build_path.exists()
+    assert install_path.exists()
+    assert output_path.exists()
 
     platforms = kwargs.get("platforms")
     if not platforms:
         return
 
     for platform in platforms:
-        header = os.path.join(install_path, platform, "library.h")
-        lib = os.path.join(install_path, platform, "libiosbuildexample.a")
+        header = install_path / platform / "library.h"
+        lib = install_path / platform / "libiosbuildexample.a"
 
-        assert os.path.isfile(header)
-        assert os.path.isfile(lib)
+        assert header.exists()
+        assert lib.exists()
 
-    framework = os.path.join(output_path, "libiosbuildexample.xcframework")
-    assert os.path.isdir(framework)
+    framework = output_path / "libiosbuildexample.xcframework"
+    assert framework.exists()
 
     # Test structure of xcframework
     p = 0
-    for f in os.listdir(framework):
-        path = os.path.join(framework, f)
-        if os.path.isdir(path):
-            lib = os.path.join(path, "libiosbuildexample.a")
-            assert os.path.isfile(lib)
+    for f in framework.iterdir():
+        if f.is_dir():
+            lib = f / "libiosbuildexample.a"
+            assert lib.exists()
             p += 1
         else:
-            assert f == "Info.plist"
+            assert f.name == "Info.plist"
 
     assert p == len(platforms)
 
@@ -209,14 +203,12 @@ def testBuild(tmp_path, print_level):
     with pytest.raises(TypeError):
         build.runBuild()
 
-    kwargs = parse(["example", "--output-dir", os.path.abspath(tmp_path)])
+    kwargs = parse(["example", "--output-dir", str(tmp_path)])
     kwargs["print_level"] = print_level
 
-    build_path = kwargs["build_prefix"].name
-    install_path = kwargs["install_prefix"].name
+    build_path = kwargs["build_prefix"]
+    install_path = kwargs["install_prefix"]
 
-    kwargs["build_prefix"] = build_path
-    kwargs["install_prefix"] = install_path
     kwargs["output_dir"] = tmp_path
 
     build.runBuild(**kwargs)
@@ -236,11 +228,8 @@ def testBuildWithOptions(tmp_path, print_level):
     kwargs["platform_options"] = {"MAC_ARM64": {"NEW": "OFF"}}
     kwargs["output_dir"] = tmp_path
 
-    build_path = kwargs["build_prefix"].name
-    install_path = kwargs["install_prefix"].name
-
-    kwargs["build_prefix"] = build_path
-    kwargs["install_prefix"] = install_path
+    build_path = kwargs["build_prefix"]
+    install_path = kwargs["install_prefix"]
 
     build.runBuild(**kwargs)
 

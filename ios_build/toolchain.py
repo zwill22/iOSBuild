@@ -1,9 +1,9 @@
-import os
+from pathlib import Path
 import requests
-import tempfile
 
 from urllib.parse import urlparse
 
+from ios_build.parser import tmpDir
 from ios_build.printer import getPrinter
 from ios_build.errors import IOSBuildError
 
@@ -26,11 +26,11 @@ def isURL(inputPath: str) -> bool:
     return False
 
 
-def request_function(url: str):
+def requestFunction(url: str):
     return requests.get(url)
 
 
-def download(url: str, output_file: str, request_fn=request_function):
+def download(url: str, output_file: Path, request_fn=requestFunction):
     """
     Download URL to output file
 
@@ -47,13 +47,13 @@ def download(url: str, output_file: str, request_fn=request_function):
         raise IOSBuildError("Unable to establish internet connection")
 
     if r.status_code != 200:
-        raise IOSBuildError("Unable to download file: {}".format(url))
+        raise IOSBuildError(f"Unable to download file: {url}")
 
     with open(output_file, "wb") as f:
         f.write(r.content)
 
 
-def getToolchain(toolchain: str | None = None, **kwargs) -> str:
+def getToolchain(toolchain: str | Path | None = None, **kwargs) -> Path:
     """
     Retrieve the toolchain file for building CMake projects for Apple
     operating systems. The default version is specified in the parser.
@@ -67,7 +67,7 @@ def getToolchain(toolchain: str | None = None, **kwargs) -> str:
         ValueError: Raised if no toolchain file is specified.
 
     Returns:
-        str: Path to toolchain file.
+        Path: Path to toolchain file.
     """
     if not toolchain:
         raise ValueError("Toolchain file not found")
@@ -77,18 +77,18 @@ def getToolchain(toolchain: str | None = None, **kwargs) -> str:
 
     printer.printValue("Acquiring toolchain file", toolchain, verbosity=1)
 
-    if isURL(toolchain):
-        tmp = os.path.join(tempfile.gettempdir(), "ios.toolchain.cmake")
-
+    if isinstance(toolchain, str) and isURL(toolchain):
+        tmp = tmpDir() / "ios.toolchain.cmake"
         download(toolchain, tmp)
 
         output = tmp
-
-    elif os.path.isfile(toolchain):
+    elif isinstance(toolchain, str) and Path(toolchain).exists():
+        output = Path(toolchain)
+    elif isinstance(toolchain, Path) and toolchain.exists():
         output = toolchain
     else:
         printer.printStat("Toolchain not found", tick="cross")
-        raise IOSBuildError("Unable to find toolchain: {}".format(toolchain))
+        raise IOSBuildError(f"Unable to find toolchain: {toolchain}")
 
     printer.printStat("Toolchain found")
     printer.printValue("Toolchain file", output, verbosity=1)

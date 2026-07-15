@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 from ios_build.printer import getPrinter
 from ios_build import interface
@@ -69,19 +69,16 @@ def configure(
     printer.printEmbeddedDict(platform_options, verbosity=1)
     printer.print("Running CMake configuration...", verbosity=1)
 
-    global_options = ["-D{0}={1}".format(k, v) for k, v in cmake_options.items()]
-    specific_options = [
-        "-D{0}={1}".format(k, v) for k, v in platform_specific_options.items()
-    ]
+    global_options = [f"-D{k}={v}" for k, v in cmake_options.items()]
+    specific_options = [f"-D{k}={v}" for k, v in platform_specific_options.items()]
 
-    platform_prefix = (
-        os.path.join(install_dir, platform) if install_dir and platform else ""
-    )
+    platform_prefix = Path(install_dir) / platform if install_dir and platform else Path
     local_options = [
         f"-G{generator}",
         f"-DCMAKE_TOOLCHAIN_FILE={toolchain_path}",
         f"-DPLATFORM={platform}",
-        f"-DCMAKE_INSTALL_PREFIX={platform_prefix}-S",
+        f"-DCMAKE_INSTALL_PREFIX={platform_prefix}",
+        "-S",
         path,
         "-B",
         platform_dir,

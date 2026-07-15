@@ -1,4 +1,3 @@
-import os
 import pytest
 import requests
 
@@ -7,15 +6,15 @@ from ios_build.printer import Printer
 from ios_build.toolchain import getToolchain, download
 
 
-def test_download(tmp_path):
+def testDownload(tmp_path):
     real_url = "https://github.com/zwill22/iOSBuild/blob/main/example/CMakeLists.txt"
-    output_file = str(tmp_path / "file.txt")
+    output_file = tmp_path / "file.txt"
     download(real_url, output_file)
 
-    assert os.path.isfile(output_file)
+    assert output_file.exists()
 
     fake_url = "https://github.com/zwill22/iOSBuild/blob/main/example/NotAFile.txt"
-    output2 = str(tmp_path / "nofile.txt")
+    output2 = tmp_path / "nofile.txt"
     with pytest.raises(IOSBuildError, match="Unable to download file"):
         download(fake_url, output2)
 
@@ -25,35 +24,35 @@ class FakeResponse:
         self.status_code = status
 
 
-def fake_downloader(url):
+def fakeDownloader(url):
     if url == "connection":
         raise requests.exceptions.ConnectionError("Connection error")
 
     return FakeResponse(301)
 
 
-def test_connection(tmp_path):
+def testConnection(tmp_path):
     url = "connection"
-    output_file = str(tmp_path / "file.out")
+    output_file = tmp_path / "file.out"
 
     with pytest.raises(IOSBuildError, match="Unable to establish internet connection"):
-        download(url, output_file, request_fn=fake_downloader)
+        download(url, output_file, request_fn=fakeDownloader)
 
     url2 = "testfile"
     with pytest.raises(IOSBuildError, match="Unable to download file: "):
-        download(url2, output_file, request_fn=fake_downloader)
+        download(url2, output_file, request_fn=fakeDownloader)
 
 
 @pytest.mark.parametrize("print_level", range(-1, 3))
-def test_toolchain(print_level, toolchain_file):
+def testToolchain(print_level, toolchainFile):
     printer = Printer(print_level=print_level)
     with pytest.raises(ValueError):
         getToolchain(printer=printer)
 
-    file = getToolchain(printer=printer, toolchain=toolchain_file)
+    file = getToolchain(printer=printer, toolchain=toolchainFile)
 
-    assert os.path.isfile(file)
+    assert file.exists()
 
     with pytest.raises(IOSBuildError):
-        fake_file = os.path.join(file, "something")
+        fake_file = file / "something"
         getToolchain(printer=printer, toolchain=fake_file)

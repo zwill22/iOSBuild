@@ -1,10 +1,9 @@
-from ios_build import parser
-
 import json
 import pytest
 import argparse
 
 from ios_build.errors import IOSBuildError
+from ios_build.config import sortCMakeOptions, loadJson, Config
 
 fail_cases = [
     (
@@ -41,7 +40,7 @@ fail_cases = [
 @pytest.mark.parametrize("value, expected_message", fail_cases)
 def testSortCMakeOptionsFailures(value, expected_message):
     with pytest.raises(IOSBuildError, match=expected_message):
-        parser.sortCMakeOptions(value)
+        sortCMakeOptions(value)
 
 
 success_cases = [
@@ -57,13 +56,13 @@ success_cases = [
 
 @pytest.mark.parametrize("example_input, expected_result", success_cases)
 def testSortCMakeOptions(example_input, expected_result):
-    result = parser.sortCMakeOptions(example_input)
+    result = sortCMakeOptions(example_input)
 
     assert result == expected_result
 
 
 def testLoadJson():
-    loaded_json = parser.loadJson("tests/example.json")
+    loaded_json = loadJson("tests/example.json")
     assert loaded_json == {"key1": "value1", "key2": "value2"}
 
 
@@ -74,26 +73,26 @@ print_options = [(False, 0), (False, 1), (False, 2), (True, 0)]
 def testSortArgsEmpty(quiet, verbose):
     namespace = argparse.Namespace()
 
-    expected_result = {"print_level": 0}
+    expected_result: dict = {"print_level": 0}
 
-    result = parser.sortArgs(namespace)
-    assert result == expected_result
+    config = Config(namespace)
+    assert config.data == expected_result
 
     namespace.cmake_options = None
     namespace.platform_json = None
     namespace.platform_options = None
 
     expected_result["cmake_options"] = {}
-    result = parser.sortArgs(namespace)
-    assert result == expected_result
+    config = Config(namespace)
+    assert config.data == expected_result
 
     namespace.quiet = quiet
     namespace.verbose = verbose
     expected_result["print_level"] = -1 if quiet else verbose
 
-    result = parser.sortArgs(namespace)
+    config = Config(namespace)
 
-    assert result == expected_result
+    assert config.data == expected_result
 
 
 def testSortArgsConflict():
@@ -106,7 +105,7 @@ def testSortArgsConflict():
     namespace.dev_print = False
 
     with pytest.raises(AssertionError):
-        parser.sortArgs(namespace)
+        Config(namespace)
 
 
 @pytest.mark.parametrize("quiet, verbose", print_options)
@@ -126,9 +125,9 @@ def testSortArgsPlatformJson(quiet, verbose):
         "platform_options": {"key1": "value1", "key2": "value2"},
     }
 
-    result = parser.sortArgs(namespace)
+    config = Config(namespace)
 
-    assert result == expected_result
+    assert config.data == expected_result
 
 
 @pytest.mark.parametrize("quiet, verbose", print_options)
@@ -150,9 +149,9 @@ def testSortArgsPlatformOptions(quiet, verbose):
         "platform_options": options,
     }
 
-    result = parser.sortArgs(namespace)
+    config = Config(namespace)
 
-    assert result == expected_result
+    assert config.data == expected_result
 
 
 @pytest.mark.parametrize("quiet, verbose", print_options)
@@ -170,6 +169,6 @@ def testSortArgsCMakeOptions(quiet, verbose):
     expected_result["print_level"] = -1 if quiet else verbose
     expected_result["cmake_options"] = {"CHEESE": "MELTED", "OPTION": "FLAG"}
 
-    result = parser.sortArgs(namespace)
+    config = Config(namespace)
 
-    assert result, expected_result
+    assert config.data == expected_result

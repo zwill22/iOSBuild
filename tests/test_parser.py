@@ -1,8 +1,9 @@
-import os
+from pathlib import Path
+
 import pytest
 import json
 
-from ios_build.parser import parse
+from ios_build.config import parse
 from ios_build.errors import ParserError
 
 
@@ -24,7 +25,7 @@ def testDefaults(capsys):
         "toolchain_dest": "toolchain",
         "build_prefix": "build",
         "install_prefix": "install",
-        "output_dir": os.getcwd(),
+        "output_dir": Path.cwd(),
         "generator": "Xcode",
         "clean_up": False,
         "platforms": ["OS64", "SIMULATORARM64", "MAC_ARM64"],
@@ -36,7 +37,7 @@ def testDefaults(capsys):
     for k, v in result.items():
         assert k in expected_result
         if k in ("toolchain_dest", "build_prefix", "install_prefix"):
-            assert os.path.isdir(v.name)
+            assert v.is_dir()
         else:
             assert v == expected_result[k]
 

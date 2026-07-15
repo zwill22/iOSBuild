@@ -1,6 +1,6 @@
 import sys
 
-from ios_build.parser import parse
+from ios_build.config import parse
 from ios_build.build import runBuild
 
 from ios_build.errors import IOSBuildError, CMakeError, XCodeBuildError, ParserError
@@ -21,25 +21,25 @@ def runner(args=None):
         return 4
 
     try:
-        kwargs = parse(args=args)
+        config = parse(args=args)
     except IOSBuildError as error:
-        print("Invalid input: {}".format(error), file=sys.stderr)
+        print(f"Invalid input: {error}", file=sys.stderr)
         return 1
     except ParserError:
         return 2
 
     try:
-        runBuild(**kwargs)
+        runBuild(**config)
     except IOSBuildError as error:
-        print("Error: {}".format(error), file=sys.stderr)
+        print(f"Error: {error}", file=sys.stderr)
         return 1
     except CMakeError as error:
         print("CMake Error", file=sys.stderr)
-        print("Message: {}".format(error), file=sys.stderr)
+        print(f"Message: {error}", file=sys.stderr)
         return 2
     except XCodeBuildError as error:
         print("! XCodeBuild error", file=sys.stderr)
-        print("! Message: {}".format(error), file=sys.stderr)
+        print(f"! Message: {error}", file=sys.stderr)
         return 3
 
     return 0

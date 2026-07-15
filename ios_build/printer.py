@@ -1,6 +1,6 @@
-import tempfile
 import sys
 import datetime
+from pathlib import Path
 
 
 class Printer:
@@ -35,7 +35,7 @@ class Printer:
             verbosity (int): The level of verbosity at which the statement should be printed. Defaults to 0.
         """
         if self.verbosity >= verbosity:
-            print("{0:<32} {1}".format(text, value), **kwargs)
+            print(f"{text:<32} {value}", **kwargs)
 
     def tick(self, verbosity=0, **kwargs):
         """
@@ -81,13 +81,13 @@ class Printer:
         if self.verbosity < verbosity:
             return
         if header:
-            print("{}:".format(header))
+            print(header)
         for k, v in input_dict.items():
             if type(v) is dict:
-                print("{}:".format(k))
+                print(k)
                 self.printEmbeddedDict(v, verbosity=verbosity)
-            elif type(v) is tempfile.TemporaryDirectory:
-                self.printValue(k, v.name, end="\n", verbosity=verbosity)
+            elif type(v) is Path:
+                self.printValue(k, str(v), end="\n", verbosity=verbosity)
             else:
                 self.printValue(k, v, end="\n", verbosity=verbosity)
 
@@ -121,7 +121,7 @@ class Printer:
         time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         print("\U0001f5a5 " * n)
         print("iOSBuild complete")
-        print("Time:\t{}".format(time))
+        print(f"Time:\t{time}")
         print("\U0001f4bb" * n)
 
         return time
