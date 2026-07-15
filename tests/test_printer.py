@@ -24,7 +24,7 @@ def testGetPrinter():
 def testPrint(capsys, print_level):
     printer = Printer(print_level=print_level)
     with pytest.raises(TypeError):
-        printer.printValue(None, verbosity=print_level)
+        printer.printValue(None, None, verbosity=print_level)
     printer.print("text", verbosity=print_level)
 
     captured = capsys.readouterr()

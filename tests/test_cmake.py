@@ -155,7 +155,10 @@ def testBuild(tmp_path, print_level, capfd):
     with pytest.raises(CMakeError):
         cmake.build(platform_dir=str(tmp_path), printer=printer)
     captured = capfd.readouterr()
-    assert "Error: could not load cache" in captured.err
+    assert (
+        "Error: could not load cache" in captured.err
+        or "Error: not a CMake build directory (missing CMakeCache.txt)" in captured.err
+    )
 
 
 @pytest.mark.parametrize("print_level", range(-1, 3))

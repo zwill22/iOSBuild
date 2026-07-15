@@ -27,11 +27,11 @@ def checkInput(*args):
 
 
 def configure(
-    path: str = None,
-    platform: str = None,
-    toolchain_path: str = None,
-    install_dir: str = None,
-    platform_dir: str = None,
+    path: str | None = None,
+    platform: str | None = None,
+    toolchain_path: str | None = None,
+    install_dir: str | None = None,
+    platform_dir: str | None = None,
     platform_options: dict = {},
     cmake_options: dict = {},
     generator="Xcode",
@@ -73,24 +73,30 @@ def configure(
     specific_options = [
         "-D{0}={1}".format(k, v) for k, v in platform_specific_options.items()
     ]
+
+    if install_dir and platform:
+        install_prefix = f"-DCMAKE_INSTALL_PREFIX={os.path.join(install_dir, platform)}"
+    else:
+        install_prefix = ""
     local_options = [
-        "-G{}".format(generator),
-        "-DCMAKE_TOOLCHAIN_FILE={}".format(toolchain_path),
-        "-DPLATFORM={}".format(platform),
-        "-DCMAKE_INSTALL_PREFIX={}".format(os.path.join(install_dir, platform)),
+        f"-G{generator}",
+        f"-DCMAKE_TOOLCHAIN_FILE={toolchain_path}",
+        f"-DPLATFORM={platform}",
+        install_prefix,
         "-S",
         path,
         "-B",
         platform_dir,
     ]
+    
     if not printer.showError():
-        local_options.append("-Wno-dev")
+        local_options.append("-Wno-author")
 
     interface.cmake(*global_options, *specific_options, *local_options, path, **kwargs)
     printer.printStat("CMake configuration complete")
 
 
-def build(platform_dir: str = None, config: str = "Release", **kwargs):
+def build(platform_dir: str | None = None, config: str = "Release", **kwargs):
     """
     CMake build step. Assumes configuration is completed runs `cmake --build {platform_dir} --config {config}`
     where `platform_dir` is the CMake build directory.
@@ -107,7 +113,7 @@ def build(platform_dir: str = None, config: str = "Release", **kwargs):
     printer.printStat("CMake Build complete")
 
 
-def install(platform_dir: str = None, config: str = "Release", **kwargs):
+def install(platform_dir: str | None = None, config: str = "Release", **kwargs):
     """
     Cmake install step. Assumes configuration and build are complete and runs
     `cmake --install {platform_dir} --config {config}`

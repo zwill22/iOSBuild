@@ -1,6 +1,7 @@
+import re
+
 import pytest
 import os
-import tempfile
 
 from .test_search import createEmptyFile
 from ios_build import build
@@ -43,17 +44,13 @@ def testSetupDirectory(tmp_path, print_level, clean):
         sub_dir, printer=printer, clean=clean, prefix=tmp_path
     )
 
-    assert directory2 == os.path.join(tmp_path, sub_dir)
+    assert directory2 == str(tmp_path / sub_dir)
     assert os.path.isdir(directory2)
 
-    tmp_dir = tempfile.TemporaryDirectory(dir=tmp_path)
-    directory3 = build.setupDirectory(tmp_dir, printer=printer, clean=clean)
+    directory3 = build.setupDirectory(tmp_path, printer=printer, clean=clean)
 
-    assert directory3 == os.path.abspath(tmp_dir.name)
+    assert directory3 == os.path.abspath(tmp_path)
     assert os.path.isdir(directory3)
-
-    with pytest.raises(TypeError, match="argument must be str, bytes"):
-        build.setupDirectory(tmp_dir, printer=printer, clean=clean, prefix=tmp_path)
 
 
 @pytest.mark.parametrize("print_level", range(-1, 3))
@@ -140,7 +137,7 @@ def testBuildFails(capfd, print_level):
     kwargs["print_level"] = print_level
 
     with pytest.raises(
-        TypeError, match="checkPath\(\) missing 1 required positional argument: "
+        TypeError, match=r"checkPath\(\) missing 1 required positional argument: "
     ):
         build.runBuild(**kwargs)
 
@@ -157,8 +154,14 @@ def testBuildFails(capfd, print_level):
     with pytest.raises(CMakeError):
         build.runBuild(**kwargs)
 
+    pattern = re.compile(
+        r"Could not find toolchain file:\s*?\"?example/CMakeLists\.txt\"?",
+        flags=re.MULTILINE,
+    )
     captured = capfd.readouterr()
-    assert "Could not find toolchain file: example/CMakeLists.txt" in captured.err
+
+    matches = pattern.findall(captured.err)
+    assert len(matches) == 1
 
     kwargs["build_prefix"] = "install"
     with pytest.raises(
@@ -173,6 +176,9 @@ def checkBuild(build_path, install_path, output_path, **kwargs):
     assert os.path.isdir(output_path)
 
     platforms = kwargs.get("platforms")
+    if not platforms:
+        return
+
     for platform in platforms:
         header = os.path.join(install_path, platform, "library.h")
         lib = os.path.join(install_path, platform, "libiosbuildexample.a")

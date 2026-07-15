@@ -67,7 +67,7 @@ class Printer:
             self.print("", **kwargs)
 
     def printEmbeddedDict(
-        self, input_dict: dict, verbosity: int = 0, header: str = None
+        self, input_dict: dict, verbosity: int = 0, header: str | None = None
     ):
         """
         Print a dictionary using a recursive algorithm
@@ -113,7 +113,7 @@ class Printer:
         print(logo)
         print()
 
-    def printFooter(self, **kwargs) -> str:
+    def printFooter(self, **kwargs) -> str | None:
         if self.verbosity < 0:
             return
 

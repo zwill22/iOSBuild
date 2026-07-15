@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import shutil
 
 from ios_build import cmake
@@ -45,9 +46,9 @@ def checkPath(path: str, **kwargs):
 
 
 def setupDirectory(
-    dir_prefix,
+    dir_prefix: str | Path,
     clean: bool = False,
-    prefix: str = None,
+    prefix: str | None = None,
     name: str = "Directory",
     **kwargs,
 ) -> str:
@@ -68,10 +69,10 @@ def setupDirectory(
         str: _description_
     """
     path = os.path.join(prefix, dir_prefix) if prefix else dir_prefix
-    try:
+    if isinstance(path, str):
         new_dir = os.path.abspath(path)
-    except TypeError:
-        new_dir = path.name
+    else:
+        new_dir = str(path.absolute())
 
     if os.path.isdir(new_dir):
         if clean:
@@ -86,7 +87,7 @@ def setupDirectory(
     return new_dir
 
 
-def createFrameworks(install_dir: str, output_dir: str = None, **kwargs):
+def createFrameworks(install_dir: str, output_dir: str | None = None, **kwargs):
     """
     Searches for static libraries in the `install_dir` and uses them to create
     an `xcframework` for each. The framework contains versions of the library
@@ -129,14 +130,14 @@ def cleanUp(build_dir: str, install_dir: str, clean_up: bool = False, **kwargs):
         clean_up (bool, optional): Whether to remove the above directories. Defaults to False.
     """
     printer = getPrinter(**kwargs)
-    printer.printStat("Cleaning Up", tick=False)
+    printer.printStat("Cleaning Up", tick="")
     if clean_up:
         shutil.rmtree(build_dir)
         shutil.rmtree(install_dir)  # TODO Remove install_dir?
     printer.tick()
 
 
-def build(build_dir: str, platforms: list[str] = None, **kwargs):
+def build(build_dir: str, platforms: list[str] = [], **kwargs):
     """
     Loop through each platform and run CMake for each.
     This includes the configure step, building and installation.

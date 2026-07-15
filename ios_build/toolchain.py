@@ -49,7 +49,7 @@ def download(url: str, output_file: str):
         f.write(r.content)
 
 
-def getToolchain(toolchain: str = None, **kwargs) -> str:
+def getToolchain(toolchain: str | None = None, **kwargs) -> str:
     """
     Retrieve the toolchain file for building CMake projects for Apple
     operating systems. The default version is specified in the parser.
