@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import shutil
+from tempfile import TemporaryDirectory
 
 from ios_build import cmake
 from ios_build import search
@@ -46,7 +47,7 @@ def checkPath(path: str, **kwargs):
 
 
 def setupDirectory(
-    dir_prefix: str | Path,
+    dir_prefix: str | Path | TemporaryDirectory,
     clean: bool = False,
     prefix: str | None = None,
     name: str = "Directory",
@@ -68,11 +69,18 @@ def setupDirectory(
     Returns:
         str: _description_
     """
-    path = os.path.join(prefix, dir_prefix) if prefix else dir_prefix
-    if isinstance(path, str):
-        new_dir = os.path.abspath(path)
+
+    if isinstance(dir_prefix, TemporaryDirectory):
+        directory = dir_prefix.name
     else:
-        new_dir = str(path.absolute())
+        directory = str(dir_prefix)
+
+    if prefix:
+        path = os.path.join(prefix, directory)
+    else:
+        path = directory
+
+    new_dir = os.path.abspath(path)
 
     if os.path.isdir(new_dir):
         if clean:

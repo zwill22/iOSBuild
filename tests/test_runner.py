@@ -44,5 +44,5 @@ def testRunner(capsys, args, exit_code, error):
 
 @pytest.mark.slow
 def testRun(tmp_path):
-    args = ["example", "--output-dir={}".format(tmp_path)]
+    args = ["example", f"--output-dir={str(tmp_path)}"]
     assert runner(args=args) == 0
