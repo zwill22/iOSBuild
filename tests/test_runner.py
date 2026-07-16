@@ -25,7 +25,7 @@ test_cases = [
     (
         ["example", "-DOPTION=VALUE", "-DOPTION=VALUE"],
         1,
-        "Invalid input: Option OPTION already specified",
+        "Option OPTION already specified",
     ),
     (["example", "--cmake", "notcmake"], 1, "Error: CMake not found"),
     (["example", "--cmake", "xcodebuild"], 2, "xcodebuild: error: invalid option"),

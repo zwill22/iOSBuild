@@ -43,7 +43,7 @@ def checkValues(val: str, options: dict):
         )
     elif lv == 0:
         raise IOSBuildError(
-            f"Invalid CMake option: {val}, should be specified as `-D {v}=VALUE`"
+            f"Invalid CMake option: {val}, should be specified as `-D {k}=VALUE`"
         )
 
     protected_keys = ["CMAKE_TOOLCHAIN_FILE", "PLATFORM", "CMAKE_INSTALL_PREFIX"]
@@ -53,7 +53,7 @@ def checkValues(val: str, options: dict):
             f"CMake option {k} is used by iOSBuild and cannot be specified"
         )
     if k in options:
-        raise IOSBuildError(f"Option {k} is already specified")
+        raise IOSBuildError(f"Option {k} already specified")
 
     return k, v
 
