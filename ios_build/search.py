@@ -17,11 +17,9 @@ def findPlatformLibraries(directory: Path) -> dict[str, Path]:
         dict[str, str]: Full path to libraries keyed by library names.
     """
     libraries = {}
-    for root, dirs, files in directory.walk():
-        for file in files:
-            if file.endswith(".a"):
-                name = Path(file).name.split(".")[0]
-                libraries[name] = root / file
+    for file in directory.rglob("*.a"):
+        name = file.stem
+        libraries[name] = directory / file
 
     return libraries
 
