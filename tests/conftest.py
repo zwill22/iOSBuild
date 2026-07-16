@@ -4,7 +4,7 @@ from ios_build.toolchain import getToolchain
 
 
 @pytest.fixture
-def toolchain_file():
+def toolchainFile():
     """
     Return the filepath to the ios toolchain file
 

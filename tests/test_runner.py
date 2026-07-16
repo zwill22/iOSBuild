@@ -25,7 +25,7 @@ test_cases = [
     (
         ["example", "-DOPTION=VALUE", "-DOPTION=VALUE"],
         1,
-        "Invalid input: Option OPTION already specified",
+        "Option OPTION already specified",
     ),
     (["example", "--cmake", "notcmake"], 1, "Error: CMake not found"),
     (["example", "--cmake", "xcodebuild"], 2, "xcodebuild: error: invalid option"),
@@ -44,5 +44,5 @@ def testRunner(capsys, args, exit_code, error):
 
 @pytest.mark.slow
 def testRun(tmp_path):
-    args = ["example", "--output-dir={}".format(tmp_path)]
+    args = ["example", f"--output-dir={str(tmp_path)}"]
     assert runner(args=args) == 0

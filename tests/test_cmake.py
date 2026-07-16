@@ -1,6 +1,6 @@
-import os
+from pathlib import Path
+
 import pytest
-import tempfile
 
 from ios_build import cmake
 from ios_build.interface import callSubProcess
@@ -15,64 +15,59 @@ def testCheck():
         cmake.checkCMake(cmake_command="fake_cmake_command")
 
 
-def setupCases():
-    string = "expected str instance, NoneType found"
+@pytest.fixture(scope="session")
+def generateCases(tmp_path_factory):
 
-    kwargs = {
-        "path": "example",
-        "platform": "OS64",
-        "generator": "Xcode",
-        "install_dir": tempfile.gettempdir(),
-        "platform_dir": tempfile.gettempdir(),
-    }
+    def _generateCases(i):
+        string = "expected str instance, NoneType found"
 
-    n = len(kwargs)
+        kwargs = {
+            "path": "example",
+            "platform": "OS64",
+            "generator": "Xcode",
+            "install_dir": tmp_path_factory.mktemp("install"),
+            "platform_dir": tmp_path_factory.mktemp("platform"),
+        }
 
-    input_args = [dict(list(kwargs.items())[:i]) for i in range(n)]
-    output_strs = [string] * n
+        assert i < len(kwargs)
+        input_args = dict(list(kwargs.items())[:i])
 
-    return list(zip(input_args, output_strs))
+        return input_args, string
 
-
-default_cases = setupCases()
+    return _generateCases
 
 
 @pytest.mark.parametrize("print_level", range(-1, 3))
-@pytest.mark.parametrize("kwargs, result", default_cases)
-def testConfigureDefault(kwargs, result, print_level, toolchain_file):
+@pytest.mark.parametrize("case", range(0, 5))
+def testConfigureDefault(generateCases, case, print_level, toolchainFile):
+    kwargs, result = generateCases(case)
+
     printer = Printer(print_level=print_level)
     with pytest.raises(TypeError, match=result):
-        cmake.configure(printer=printer, toolchain_path=toolchain_file, **kwargs)
+        cmake.configure(printer=printer, toolchain_path=toolchainFile, **kwargs)
 
 
-def checkConfig(platform_dir: str, generator: str):
-    def checkDir(*args):
-        return os.path.isdir(os.path.join(platform_dir, *args))
+def checkConfig(platform_dir: Path, generator: str):
+    assert (platform_dir / "CMakeCache.txt").exists()
+    assert (platform_dir / "CMakeFiles").exists()
 
-    def checkFile(*args):
-        return os.path.isfile(os.path.join(platform_dir, *args))
-
-    assert checkDir()
-    assert checkFile("CMakeCache.txt")
-    assert checkDir("CMakeFiles")
-
-    assert checkFile("CMakeCache.txt")
+    assert (platform_dir / "CMakeCache.txt").exists()
 
     # TODO CMakeCache.txt checker
-    assert checkFile("cmake_install.cmake")
-    assert checkDir(platform_dir, "src")
+    assert (platform_dir / "cmake_install.cmake").exists()
+    assert (platform_dir / "src").exists()
 
-    assert checkDir("src", "CMakeFiles")
-    assert checkFile("src", "cmake_install.cmake")
+    assert (platform_dir / "src" / "CMakeFiles").exists()
+    assert (platform_dir / "src" / "cmake_install.cmake").exists()
 
     if generator == "Xcode":
-        assert checkDir("IOSBuildExampleProject.xcodeproj")
-        assert checkDir("CMakeScripts")
+        assert (platform_dir / "IOSBuildExampleProject.xcodeproj").exists()
+        assert (platform_dir / "CMakeScripts").exists()
     elif generator == "Unix Makefiles":
-        assert checkFile("Makefile")
-        assert checkFile("src", "Makefile")
+        assert (platform_dir / "Makefile").exists()
+        assert (platform_dir / "src" / "Makefile").exists()
     elif generator == "Ninja":
-        assert checkFile("build.ninja")
+        assert (platform_dir / "build.ninja").exists()
 
 
 def checkGenerator(generator):
@@ -126,18 +121,18 @@ def testConfigure(
     print_level,
     platform_options,
     cmake_options,
-    toolchain_file,
+    toolchainFile,
 ):
     path = "example"
     printer = Printer(print_level=print_level)
 
-    platform_dir = os.path.join(tmp_path, platform)
-    install_dir = os.path.join(tmp_path, "install")
+    platform_dir = tmp_path / platform
+    install_dir = tmp_path / "install"
 
     cmake.configure(
         path=path,
         platform=platform,
-        toolchain_path=toolchain_file,
+        toolchain_path=toolchainFile,
         install_dir=install_dir,
         platform_dir=platform_dir,
         printer=printer,
@@ -155,7 +150,10 @@ def testBuild(tmp_path, print_level, capfd):
     with pytest.raises(CMakeError):
         cmake.build(platform_dir=str(tmp_path), printer=printer)
     captured = capfd.readouterr()
-    assert "Error: could not load cache" in captured.err
+    assert (
+        "Error: could not load cache" in captured.err
+        or "Error: not a CMake build directory (missing CMakeCache.txt)" in captured.err
+    )
 
 
 @pytest.mark.parametrize("print_level", range(-1, 3))

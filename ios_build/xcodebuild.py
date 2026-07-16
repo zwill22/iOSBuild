@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 from ios_build import interface
 from ios_build.printer import getPrinter
@@ -16,9 +16,9 @@ def checkXCodeBuild(**kwargs):
 
 
 def createXCFramework(
-    install_dir: str,
+    install_dir: Path,
     lib: str,
-    files: dict[str, str],
+    files: dict[str, Path],
     **kwargs,
 ):
     """
@@ -30,13 +30,13 @@ def createXCFramework(
         lib (str): Name of output library
         files (dict[str, str]): All library files in a dictionary
     """
-    output_file = os.path.join(install_dir, "{}.xcframework".format(lib))
-    if os.path.isdir(output_file):
-        raise IOSBuildError("Output file already exists: {}".format(output_file))
+    output_file = install_dir / f"{lib}.xcframework"
+    if output_file.exists():
+        raise IOSBuildError(f"Output file already exists: {output_file}")
     commands = ["-create-xcframework"]
     for library in files.values():
         commands.append("-library")
-        commands.append(library)
+        commands.append(str(library))
     commands.append("-output")
-    commands.append(output_file)
+    commands.append(str(output_file))
     interface.xcodebuild(*commands, **kwargs)

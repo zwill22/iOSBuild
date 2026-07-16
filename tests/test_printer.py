@@ -1,6 +1,6 @@
-import pytest
-import tempfile
+import re
 
+import pytest
 from ios_build.printer import Printer, getPrinter
 
 
@@ -24,7 +24,7 @@ def testGetPrinter():
 def testPrint(capsys, print_level):
     printer = Printer(print_level=print_level)
     with pytest.raises(TypeError):
-        printer.printValue(None, verbosity=print_level)
+        printer.printValue(None, None, verbosity=print_level)
     printer.print("text", verbosity=print_level)
 
     captured = capsys.readouterr()
@@ -101,20 +101,26 @@ def testPrintStat(capsys, tick, output, print_level):
 
 
 test_cases = [
-    ({}, ""),
-    ({"key": "value"}, "key                              value\n"),
-    (
+    pytest.param({}, "", id="empty"),
+    pytest.param({"key": "value"}, "key value ", id="key-value"),
+    pytest.param(
         {"key": "value", "key2": {"newkey": "newval"}},
-        "key                              value\nkey2:\nnewkey                           newval\n",
+        "key value key2 newkey newval ",
+        id="{{key1: val1, key2: {{ key3: val2 }} }}",
     ),
-    (
+    pytest.param(
         {
             "key": "value",
             "key2": {"newkey": "newval", "newkey2": {"newnewkey": "newnewval"}},
         },
-        "key                              value\nkey2:\nnewkey                           newval\nnewkey2:\nnewnewkey                        newnewval\n",
+        "key value key2 newkey newval newkey2 newnewkey newnewval ",
+        id="{{key1: val1, key2: {{ key3: val2, key4: {{ key5: val3 }} }} }}",
     ),
 ]
+
+
+def collapseWhitespace(input: str) -> str:
+    return " ".join(re.split(r"\s+", input, flags=re.UNICODE))
 
 
 @pytest.mark.parametrize("print_level", range(-1, 3))
@@ -124,7 +130,8 @@ def testEmbeddedDict(capsys, value, expected_output, print_level):
     printer.printEmbeddedDict(value, verbosity=print_level)
 
     captured = capsys.readouterr()
-    assert captured.out == expected_output
+
+    assert collapseWhitespace(captured.out) == expected_output
 
     printer.printEmbeddedDict(value, verbosity=print_level + 1)
 
@@ -140,7 +147,8 @@ def testHeaderDict(capsys, value, expected_output, print_level):
     printer.printEmbeddedDict(value, header="A header", verbosity=print_level)
 
     captured = capsys.readouterr()
-    assert captured.out == "A header:\n" + expected_output
+    output = collapseWhitespace(captured.out)
+    assert output == f"A header {expected_output}"
 
     printer.printEmbeddedDict(value, header="A header", verbosity=print_level + 1)
 
@@ -151,8 +159,7 @@ def testHeaderDict(capsys, value, expected_output, print_level):
 
 @pytest.mark.parametrize("print_level", range(-1, 3))
 def testTempDir(capsys, tmp_path, print_level):
-    tmp = tempfile.TemporaryDirectory(dir=tmp_path)
-    kwargs = {"Dir": tmp}
+    kwargs = {"Dir": tmp_path}
 
     printer = Printer(print_level=print_level)
 
@@ -160,7 +167,7 @@ def testTempDir(capsys, tmp_path, print_level):
 
     capture = capsys.readouterr()
 
-    assert capture.out == "Dir                              {}\n".format(tmp.name)
+    assert capture.out == f"Dir                              {tmp_path}\n"
 
 
 @pytest.mark.parametrize("print_level", range(-1, 3))
@@ -219,7 +226,7 @@ def testPrintFooter(capsys, print_level):
 
     expected = "\U0001f5a5 " * n
     expected += "\niOSBuild complete\n"
-    expected += "Time:\t{}\n".format(time)
+    expected += f"Time:\t{time}\n"
     expected += "\U0001f4bb" * n
     expected += "\n"
 

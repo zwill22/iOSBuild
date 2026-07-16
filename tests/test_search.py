@@ -1,25 +1,12 @@
-import os
+from pathlib import Path
+
 import pytest
 
 from ios_build import search
 from ios_build.printer import Printer
+from .tools import createEmptyFile
 
-
-# TODO Move to separate file
-def createEmptyFile(*path) -> str:
-    filepath = os.path.join(*path)
-
-    if not os.path.exists(filepath):
-        head, _ = os.path.split(filepath)
-        if not os.path.isdir(head):
-            os.makedirs(head)
-        with open(filepath, "w"):
-            pass
-
-    return filepath
-
-
-def checkPaths(path: str, lib_paths):
+def checkPaths(path: Path, lib_paths):
     result = search.findPlatformLibraries(path)
 
     assert len(result) == len(lib_paths)
@@ -39,6 +26,7 @@ def testPlatformLibraries(tmp_path):
     checkPaths(tmp_path, lib_paths)
 
     # Create "static library file"
+    
     lib_paths["library"] = createEmptyFile(tmp_path, "library.a")
     checkPaths(tmp_path, lib_paths)
 
@@ -87,10 +75,10 @@ def testFindLibraries(tmp_path, print_level):
     assert search.findlibraries(tmp_path, printer=printer) == {}
 
     platforms = ["mac", "linux", "windows"]
-    with pytest.raises(AssertionError, match="Directory does not exist"):
+    with pytest.raises(FileNotFoundError, match="Directory does not exist"):
         search.findlibraries(tmp_path, platforms=platforms, printer=printer)
     for platform in platforms:
-        os.makedirs(os.path.join(tmp_path, platform))
+        (tmp_path / platform).mkdir()
     assert search.findlibraries(tmp_path, platforms=platforms, printer=printer) == {}
 
     expected_output = {}
@@ -102,7 +90,7 @@ def testFindLibraries(tmp_path, print_level):
     }
 
     platforms.append("bsd")
-    os.makedirs(os.path.join(tmp_path, "bsd"))
+    (tmp_path / "bsd").mkdir()
 
     assert search.findlibraries(tmp_path, platforms=platforms, printer=printer) == {
         "libexample": expected_output

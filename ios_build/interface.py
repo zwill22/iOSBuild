@@ -37,7 +37,7 @@ def cmake(*args, cmake_command: str = "cmake", **kwargs):
     """
     printer = getPrinter(**kwargs)
     command = [cmake_command, *args]
-    printer.print(" ".join(command), verbosity=2)
+    printer.print(" ".join(str(command)), verbosity=2)
     try:
         callSubProcess(command, printer)
     except FileNotFoundError:
