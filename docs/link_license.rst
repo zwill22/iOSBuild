@@ -1,7 +1,7 @@
 License
 =======
 
-The iOSBuild project is lisenced using the MIT license:
+The iOSBuild project is licenced using the MIT license:
 
 .. include:: ../LICENSE
    :parser: myst_parser.sphinx_

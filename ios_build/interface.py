@@ -46,7 +46,7 @@ def cmake(*args, cmake_command: str = "cmake", **kwargs):
         raise CMakeError(e)
 
 
-# TODO No error thrown when xcframwork already exists
+# TODO No error thrown when xcframework already exists
 def xcodebuild(*args, xcode_build_command: str = "xcodebuild", **kwargs):
     """
     Runs `xcodebuild` using subprocess.

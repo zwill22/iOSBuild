@@ -15,7 +15,7 @@ def checkValues(val: str, options: dict):
         options (dict): Current dictionary of options (to check for repeated values)
 
     Raises:
-        IOSBuildError: Thown if string is incorrectly formatted
+        IOSBuildError: Thrown if string is incorrectly formatted
     """
     keyVal = val.split("=")
 
