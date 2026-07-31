@@ -160,7 +160,7 @@ def testBuildFails(capfd: pytest.CaptureFixture[str], print_level: int):
 
     kwargs["build_prefix"] = "install"
     with pytest.raises(
-        IOSBuildError, match="nstall directory cannot be the same as build directory"
+        IOSBuildError, match="Install directory cannot be the same as build directory"
     ):
         build.runBuild(**kwargs)
 

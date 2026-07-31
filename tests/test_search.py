@@ -6,6 +6,7 @@ from ios_build import search
 from ios_build.printer import Printer
 from .tools import createEmptyFile
 
+
 def checkPaths(path: Path, lib_paths):
     result = search.findPlatformLibraries(path)
 
@@ -26,7 +27,7 @@ def testPlatformLibraries(tmp_path):
     checkPaths(tmp_path, lib_paths)
 
     # Create "static library file"
-    
+
     lib_paths["library"] = createEmptyFile(tmp_path, "library.a")
     checkPaths(tmp_path, lib_paths)
 

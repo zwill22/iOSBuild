@@ -13,7 +13,7 @@ def checkPath(path: str | Path, **kwargs):
     """
     Determines whether the given path exists and is a valid CMake project,
     i.e. contains a `CMakeLists.txt` file.
-    If the path is not found a `NotADirectoryError` is thown.
+    If the path is not found a `NotADirectoryError` is thrown.
     Else if the path does not contain a `CMakeLists.txt` file, then
     a `FileNotFoundError` is raised. Whether the `CMakeLists.txt` file is
     valid is not checked here.
@@ -108,7 +108,7 @@ def createFrameworks(install_dir: Path, output_dir: Path, **kwargs):
         xcodebuild.createXCFramework(output_dir, lib, files, **kwargs)
         printer.printValue(
             "Created XC Framework",
-            f"{output_dir / lib}.xcframwork",
+            f"{output_dir / lib}.xcframework",
             end="\n",
         )
         n += 1
