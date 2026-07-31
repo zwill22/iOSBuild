@@ -2,18 +2,20 @@
 
 [![macOS][macos-badge]][macos]
 [![Python][python-badge]][python]
+[![PyPI][pypi-badge]][pypi]
 [![GitHub][github-badge]][github]
 [![uv][uv-badge]][uv]
 [![Pytest][pytest-badge]][pytest]
 [![GitHub Actions][github-actions-badge]][github-actions]
 [![CI Build][ci-badge]][ci-build]
+[![Issues][issues-badge]][issues]
 [![Read the Docs][rtd-badge]][rtd]
 [![Documentation Status][doc-badge]][doc]
 [![CodeCov][codecov-badge]][codecov]
 [![Coverage][coverage-badge]][coverage]
 [![License: MIT][license-badge]][license]
 [![Buy Me A Coffee][buy-me-a-coffee-badge]][buy-me-a-coffee]
-[![No AI][noai-badge]](#)
+[![No AI][noai-badge]][website]
 
 Welcome to iOSBuild, a Python application for building CMake libraries for Apple systems.
 The aim of the project is to use a `CMakeLists.txt` file to generate an
@@ -47,7 +49,7 @@ This repository includes a simple example `CMake` project for testing the build 
 
 To build using `pip` from this repo:
 
-```
+```sh
 pip install iosbuild
 pip -m ios_build -v example
 ```
@@ -75,6 +77,7 @@ If successful, this outputs a file `libiosbuildexample.xcframeworks` in the `ins
 [coverage-badge]: https://img.shields.io/codecov/c/github/zwill22/iosbuild?style=for-the-badge&logo=codecov
 [buy-me-a-coffee-badge]: https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?&logo=buy-me-a-coffee&logoColor=black&style=for-the-badge
 [noai-badge]: https://custom-icon-badges.demolab.com/badge/No%20AI-2f2f2f?logo=non-ai&logoColor=white&style=for-the-badge
+[pypi-badge]: https://img.shields.io/badge/pypi-%23ececec.svg?style=for-the-badge&logo=pypi&logoColor=1f73b7
 
 <!-- Links -->
 
@@ -91,3 +94,6 @@ If successful, this outputs a file `libiosbuildexample.xcframeworks` in the `ins
 [buy-me-a-coffee]: https://coff.ee/zmwill
 [uv]: https://docs.astral.sh/uv/
 [pytest]: https://docs.pytest.org/
+[issues]: https://github.com/zwill22/iOSBuild/issues
+[website]: https://zmwill.uk
+[pypi]: https://pypi.org/project/iOSBuild/
